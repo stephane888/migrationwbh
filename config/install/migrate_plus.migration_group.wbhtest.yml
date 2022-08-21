@@ -1,0 +1,11 @@
+id: wbhtest
+label: wbh test
+description: faire un test basic d'un type de contenu .
+source_type: Drupal 9
+shared_configuration:
+  source:
+    key: default
+dependencies:
+  enforced:
+    module:
+      - migrationwbh

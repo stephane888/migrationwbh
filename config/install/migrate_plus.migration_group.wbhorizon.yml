@@ -1,0 +1,11 @@
+id: wbhorizon
+label: 'importer les données de wb-horizon'
+description: ''
+source_type: Drupal 9
+shared_configuration:
+  source:
+    key: default
+dependencies:
+  enforced:
+    module:
+      - migrationwbh

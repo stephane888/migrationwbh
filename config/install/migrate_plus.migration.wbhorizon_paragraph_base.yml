@@ -1,0 +1,55 @@
+#basic conf
+id: wbhorizon_paragraph_base
+label: 'importe les paragraphes'
+description: 'importe les paragraphes'
+migration_group: wbhorizon
+dependencies:
+  enforced:
+    module:
+      - migrationwbh
+
+      
+# Depences de migrations.
+
+
+# Sources
+source:
+  plugin: paragraph_source
+  data_fetcher_plugin: http
+  data_parser_plugin: json_api
+  #url fournissant les données ( definit par le plugin ).
+  #urls: 
+  #  - 'http://wb-horizon.kksa/jsonapi/node/article'
+  # identifiant unique de la source, ( le clé permettant d'identifier les utilisateurs uid ).
+  # cet identifiant unique est desormais accesible sur drupal_internal__`target_id`. ( @see https://www.drupal.org/project/drupal/issues/3036593 ).
+  ids:
+    drupal_internal__id:
+      type: integer
+  # Suivant la logique de fonctionnement les données doivent etre dans un array, ici on definit la clée de cet array. 
+  # => Chaque entrée dans "data" est un utilisateur.
+  #en observant Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json::getSourceData, on peut egalement renvoyé un array.
+  item_selector: data
+  
+  # Ce sont les champs qu'on doit recuperer du flux, 
+  # on doit egalement precisser comment les recuperer, tout en tenant compte de ce qui a été definit dans item_selector:
+  fields:
+    -
+      name: drupal_internal__id # Clée du champs.
+      label: 'Id' #Description du champs.
+      selector: attributes/drupal_internal__id #ou on recupere les données.
+      
+      
+# Mappage entre les champs recuperes du flux et les champs dans le nouveau site.
+# "champs_du_nouveau_site": "valeur_de_la_source"
+process:
+  nid: drupal_internal__id
+  
+
+# Destination
+destination:
+  plugin: 'entity:paragraph'
+
+
+
+
+

@@ -1,0 +1,41 @@
+<?php
+
+/**
+ *
+ * @file
+ * Install, update and uninstall functions for the migrationwbh module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function migrationwbh_install() {
+  \Drupal::messenger()->addStatus(__FUNCTION__);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function migrationwbh_uninstall() {
+  \Drupal::messenger()->addStatus(__FUNCTION__);
+}
+
+/**
+ * Implements hook_requirements().
+ */
+function migrationwbh_requirements($phase) {
+  $requirements = [];
+  
+  if ($phase == 'runtime') {
+    $value = mt_rand(0, 100);
+    $requirements['migrationwbh_status'] = [
+      'title' => t('migrationwbh status'),
+      'value' => t('migrationwbh value: @value', [
+        '@value' => $value
+      ]),
+      'severity' => $value > 50 ? REQUIREMENT_INFO : REQUIREMENT_WARNING
+    ];
+  }
+  
+  return $requirements;
+}

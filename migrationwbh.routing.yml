@@ -1,0 +1,32 @@
+migrationwbh.example:
+  path: '/migrationwbh/example'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\migrationwbh\Controller\MigrationwbhController::build'
+  requirements:
+    _permission: 'access content'
+
+migrationwbh.settings_form:
+  path: '/admin/config/system/migrationwbh'
+  defaults:
+    _title: 'migrationwbh settings'
+    _form: 'Drupal\migrationwbh\Form\SettingsForm'
+  requirements:
+    _permission: 'administer migrationwbh configuration'
+    
+    
+migrationwbh.runimport:
+  path: '/admin/config/services/migrationwbh-import'
+  defaults:
+    _title: 'Importer votre site'
+    _controller: '\Drupal\migrationwbh\Controller\MigrationwbhController::build'
+  requirements:
+    _permission: 'administer migrationwbh configuration'
+    
+migrationwbh.runimportform:
+  path: '/admin/config/services/migrationwbh-import-form'
+  defaults:
+    _title: 'Importer votre site v2'
+    _form: 'Drupal\migrationwbh\Form\MigrationWbhImport'
+  requirements:
+    _permission: 'administer migrationwbh configuration'

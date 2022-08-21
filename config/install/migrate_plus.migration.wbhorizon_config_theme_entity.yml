@@ -1,0 +1,177 @@
+#basic conf
+id: wbhorizon_config_theme_entity
+label: ' importer le theme '
+description: 'importer le theme'
+migration_group: wbhorizon
+dependencies:
+  enforced:
+    module:
+      - migrationwbh
+
+      
+# Depences de migrations.
+
+
+# Sources
+source:
+  plugin: basic_entity_source
+  data_fetcher_plugin: http
+  data_parser_plugin: json_api
+  #url fournissant les données ( definit par le plugin ).
+  #urls: 
+  #  - 'http://wb-horizon.kksa/jsonapi/node/article'
+  # identifiant unique de la source, ( le clé permettant d'identifier les utilisateurs uid ).
+  # cet identifiant unique est desormais accesible sur drupal_internal__`target_id`. ( @see https://www.drupal.org/project/drupal/issues/3036593 ).
+  ids:
+    drupal_internal__id:
+      type: integer
+  # Suivant la logique de fonctionnement les données doivent etre dans un array, ici on definit la clée de cet array. 
+  # => Chaque entrée dans "data" est un utilisateur.
+  # en observant Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json::getSourceData, on peut egalement renvoyé un array.
+  item_selector: data
+  
+  # Ce sont les champs qu'on doit recuperer du flux, 
+  # on doit egalement precisser comment les recuperer, tout en tenant compte de ce qui a été definit dans item_selector:
+  fields:
+    -
+      name: drupal_internal__id # Clée du champs.
+      label: 'Nid' #Description du champs.
+      selector: attributes/drupal_internal__id #ou on recupere les données.
+    -
+      name: hostname
+      label: 'hostname'
+      selector: attributes/hostname
+    -
+      name: color_primary
+      label: 'color_primary'
+      selector: attributes/color_primary
+    -
+      name: color_secondaire
+      label: 'color_secondaire'
+      selector: attributes/color_secondaire
+    -
+      name: color_link_hover
+      label: 'color_link_hover'
+      selector: attributes/color_link_hover 
+    -
+      name: wbubackground
+      label: 'wbubackground'
+      selector: attributes/wbubackground
+    -
+      name: wbu_titre_suppra
+      label: 'wbu_titre_suppra'
+      selector: attributes/wbu_titre_suppra
+    -
+      name: wbu_titre_biggest
+      label: 'wbu_titre_biggest'
+      selector: attributes/wbu_titre_biggest
+    -
+      name: wbu_titre_big
+      label: 'wbu_titre_big'
+      selector: attributes/wbu_titre_big
+    -
+      name: h1_font_size
+      label: 'h1_font_size'
+      selector: attributes/h1_font_size
+    -
+      name: h2_font_size
+      label: 'h2_font_size'
+      selector: attributes/h2_font_size
+    -
+      name: h3_font_size
+      label: 'h3_font_size'
+      selector: attributes/h3_font_size
+    -
+      name: h4_font_size
+      label: 'h4_font_size'
+      selector: attributes/h4_font_size
+    -
+      name: h5_font_size
+      label: 'h5_font_size'
+      selector: attributes/h5_font_size
+    -
+      name: h6_font_size
+      label: 'h6_font_size'
+      selector: attributes/h6_font_size
+    -
+      name: text_font_size
+      label: 'text_font_size'
+      selector: attributes/text_font_size
+    -
+      name: space_bottom
+      label: 'space_bottom'
+      selector: attributes/space_bottom
+    -
+      name: space_top
+      label: 'space_top'
+      selector: attributes/space_top
+    -
+      name: space_inner_top
+      label: 'space_inner_top'
+      selector: attributes/space_inner_top
+    -
+      name: settheme_as_defaut
+      label: 'settheme_as_defaut'
+      selector: attributes/settheme_as_defaut   
+    -
+      name: run_npm
+      label: 'run_npm'
+      selector: attributes/run_npm
+    -
+      name: site_config
+      label: 'site_config'
+      selector: attributes/site_config
+    -
+      name: created
+      label: 'created'
+      selector: attributes/created
+    -
+      name: changed
+      label: 'changed'
+      selector: attributes/changed
+          
+
+
+  # On definie une constante pour pouvoir stocker les images.    
+  constants:
+    file_destination: 'public://images/'
+    uri: '/jsonapi/site_internet_entity/architecte?include=layout_paragraphs'
+    url: '/jsonapi/export/template-theme'
+      
+      
+# Mappage entre les champs recuperes du flux et les champs dans le nouveau site.
+# "champs_du_nouveau_site": "valeur_de_la_source"
+process:
+  id: drupal_internal__id
+  hostname: hostname
+  color_primary: color_primary
+  color_secondaire: color_secondaire
+  color_link_hover: color_link_hover
+  wbubackground: wbubackground
+  wbu_titre_suppra: wbu_titre_suppra
+  wbu_titre_biggest: wbu_titre_biggest
+  wbu_titre_big: wbu_titre_big
+  h1_font_size: h1_font_size
+  h2_font_size: h2_font_size
+  h3_font_size: h3_font_size
+  h4_font_size: h4_font_size
+  h5_font_size: h5_font_size
+  h6_font_size: h6_font_size
+  text_font_size: text_font_size
+  space_bottom: space_bottom
+  space_top: space_top
+  space_inner_top: space_inner_top
+  settheme_as_defaut: settheme_as_defaut
+  run_npm: run_npm
+  site_config: site_config
+  created: created
+  changed: changed
+  
+
+# Destination
+destination:
+  plugin: 'entity:config_theme_entity'
+
+
+
+

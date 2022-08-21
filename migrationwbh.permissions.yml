@@ -1,0 +1,4 @@
+administer migrationwbh configuration:
+  title: 'Administer migrationwbh configuration'
+  description: 'Optional description.'
+  restrict access: true

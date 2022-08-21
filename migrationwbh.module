@@ -1,0 +1,18 @@
+<?php
+
+/**
+ *
+ * @file
+ * Primary module hooks for migrationwbh module.
+ *
+ * @DCG
+ * This file is no longer required in Drupal 8.
+ * @see https://www.drupal.org/node/2217931
+ */
+
+/**
+ * Implement hook_preprocess_page
+ */
+function migrationwbh_preprocess_page(&$variables) {
+  // dump(\Drupal::routeMatch()->getRouteName());
+}
