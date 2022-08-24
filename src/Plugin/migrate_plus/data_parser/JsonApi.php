@@ -15,7 +15,8 @@ use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
  *
  * @DataParser(
  *   id = "json_api",
- *   title = @Translation("JSON API")
+ *   title = @Translation("JSON API"),
+ *   data_fetcher_plugin= "http"
  * )
  */
 class JsonApi extends Json {
@@ -144,6 +145,10 @@ class JsonApi extends Json {
       $source_data = json_decode($utf8response, TRUE, 512, JSON_THROW_ON_ERROR);
     }
     return $source_data;
+  }
+
+  public function getDataByExternalApi(string $url) {
+    return $this->getSourceData($url);
   }
 
 }

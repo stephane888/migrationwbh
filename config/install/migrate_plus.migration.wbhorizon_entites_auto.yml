@@ -1,0 +1,40 @@
+#basic conf
+id: wbhorizon_entites_auto
+label: "Permet d'importer les entites de maniere auto"
+description: "à utilisation dynamique, les données sont ajustées en function de chaque type d'entité"
+migration_group: wbhorizon
+dependencies:
+  enforced:
+    module:
+      - migrationwbh
+
+      
+# Depences de migrations.
+
+
+# Sources
+source:
+  plugin: embedded_data
+  ids:
+    drupal_internal__id:
+      type: integer
+  data_rows:
+    -
+      drupal_internal__id: 1
+      title: 'Page 1 title'
+      content: '<p>Page 1 content</p>'
+      
+# Mappage entre les champs recuperes du flux et les champs dans le nouveau site.
+# "champs_du_nouveau_site": "valeur_de_la_source"
+process:
+  id: drupal_internal__id
+  
+
+# Destination
+destination:
+  plugin: 'entity:node'
+
+
+
+
+

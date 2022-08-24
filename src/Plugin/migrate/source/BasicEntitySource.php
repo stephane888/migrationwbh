@@ -40,6 +40,7 @@ final class BasicEntitySource extends Url {
         ''
       ];
     }
+    // if (!empty($configuration['constants']['url']))
     // dump($configuration);
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }

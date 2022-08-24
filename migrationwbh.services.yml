@@ -8,3 +8,7 @@ services:
   migrationwbh.migrate_import:
     class: Drupal\migrationwbh\Services\MigrationImport
     arguments: ['@plugin.manager.migration']
+
+  migrationwbh.migrate_auto_import:
+    class: Drupal\migrationwbh\Services\MigrationAutoImport
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser']

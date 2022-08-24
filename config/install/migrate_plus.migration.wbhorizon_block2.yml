@@ -1,0 +1,99 @@
+#basic conf
+id: wbhorizon_block2
+label: 'importer les blocks'
+description: 'importer les blocks'
+migration_group: wbhorizon
+dependencies:
+  enforced:
+    module:
+      - migrationwbh
+
+      
+# Depences de migrations.
+
+
+# Sources
+source:
+  plugin: basic_entity_source
+  data_fetcher_plugin: http
+  data_parser_plugin: json_api
+  #url fournissant les données ( definit par le plugin ).
+  #urls: 
+  #  - 'http://wb-horizon.kksa/jsonapi/node/article'
+  # identifiant unique de la source, ( le clé permettant d'identifier les utilisateurs uid ).
+  # cet identifiant unique est desormais accesible sur drupal_internal__`target_id`. ( @see https://www.drupal.org/project/drupal/issues/3036593 ).
+  ids:
+    drupal_internal__id:
+      type: string
+  # Suivant la logique de fonctionnement les données doivent etre dans un array, ici on definit la clée de cet array. 
+  # => Chaque entrée dans "data" est un utilisateur.
+  # en observant Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json::getSourceData, on peut egalement renvoyé un array.
+  item_selector: data
+  
+  # Ce sont les champs qu'on doit recuperer du flux, 
+  # on doit egalement precisser comment les recuperer, tout en tenant compte de ce qui a été definit dans item_selector:
+  fields:
+    -
+      name: drupal_internal__id #.
+      label: 'id' #Description du champs.
+      selector: attributes/drupal_internal__id #ou on recupere les données.
+    -
+      name: theme
+      label: 'Theme'
+      selector: attributes/theme  
+    - 
+      name: region
+      label: 'region'
+      selector: attributes/region
+    -
+      name: weight
+      label: 'weight'
+      selector: attributes/weight
+    -
+      name: provider
+      label: 'provider'
+      selector: attributes/provider
+    -
+      name: plugin
+      label: 'plugin'
+      selector: attributes/plugin
+    -
+      name: settings
+      label: 'settings'
+      selector: attributes/settings
+    -
+      name: visibility
+      label: 'visibility'
+      selector: attributes/visibility
+      
+
+
+  # On definie une constante pour pouvoir stocker les images.    
+  constants:
+    file_destination: 'public://images/'
+    uri: '/jsonapi/site_internet_entity/architecte?include=layout_paragraphs'
+    url: '/jsonapi/export/block' 
+      
+      
+# Mappage entre les champs recuperes du flux et les champs dans le nouveau site.
+# "champs_du_nouveau_site": "valeur_de_la_source"
+process:
+  id: drupal_internal__id
+  theme: theme
+  region: region
+  weight: weight
+  provider: provider
+  plugin: plugin
+  settings: settings
+# On importe pas les conditions de visibilitées.
+#  visibility: visibility
+  
+
+# Destination
+destination:
+  plugin: 'entity:block'
+
+
+
+
+

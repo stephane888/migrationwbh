@@ -66,6 +66,8 @@ class MigrationImport {
   public function listMigrateInstance() {
     $this->listMigrate();
     $this->createSpecificMigration();
+    // dump($this->definitions);
+    return [];
     if (!$this->instanceMigrate)
       foreach ($this->definitions as $key => $value) {
         $migration = $this->MigrationPluginManager->createInstance($key);
