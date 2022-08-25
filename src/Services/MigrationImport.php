@@ -10,6 +10,7 @@ use Drupal\migrate\Plugin\MigrationInterface;
 class MigrationImport {
   protected $definitions;
   protected $instanceMigrate;
+  protected $instanceMigrateExecute;
   /**
    *
    * @var \Drupal\migrate\Plugin\MigrationPluginManager
@@ -23,9 +24,15 @@ class MigrationImport {
   /**
    * --
    */
-  public function listMigrate() {
-    if (!$this->definitions)
-      $this->definitions = $this->MigrationPluginManager->getDefinitions();
+  public function listMigrate(array $pluginIds = []) {
+    if (!$this->definitions) {
+      if (!$pluginIds)
+        $this->definitions = $this->MigrationPluginManager->getDefinitions();
+      else
+        foreach ($pluginIds as $pluginId) {
+          $this->definitions[$pluginId] = $this->MigrationPluginManager->getDefinition($pluginId);
+        }
+    }
     return $this->definitions;
   }
 
@@ -63,18 +70,21 @@ class MigrationImport {
     // dump($datas);
   }
 
-  public function listMigrateInstance() {
-    $this->listMigrate();
-    $this->createSpecificMigration();
+  public function listMigrateInstance(array $pluginIds = []) {
+    $this->listMigrate($pluginIds);
+    // $this->createSpecificMigration();
     // dump($this->definitions);
     // return [];
     if (!$this->instanceMigrate)
       foreach ($this->definitions as $key => $value) {
-        $migration = $this->MigrationPluginManager->createInstance($key);
-        // update existing entity imported.
-        $migration->getIdMap()->prepareUpdate();
-        $executable = new MigrateExecutable($migration, new MigrateMessage());
-        $this->instanceMigrate[$key] = $executable;
+        $this->instanceMigrate[$key] = $this->MigrationPluginManager->createInstance($key);
+        // if ($this->instanceMigrate[$key]) {
+        // // update existing entity imported.
+        // $this->instanceMigrate[$key]->getIdMap()->prepareUpdate();
+        // $executable = new MigrateExecutable($this->instanceMigrate[$key], new
+        // MigrateMessage());
+        // $this->instanceMigrateExecute[$key] = $executable;
+        // }
       }
     return $this->instanceMigrate;
   }
@@ -88,8 +98,7 @@ class MigrationImport {
       $executable = new MigrateExecutable($migration, new MigrateMessage());
       try {
         // Run the migration.
-        $resul = $executable->import();
-        dump($resul);
+        $executable->import();
       }
       catch (\Exception $e) {
         $migration->setStatus(MigrationInterface::STATUS_IDLE);

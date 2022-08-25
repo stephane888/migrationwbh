@@ -87,7 +87,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
       }
     }
     $row = $this->getParagraphRow($value);
-    debugLog::kintDebugDrupal($row, 'getParagraphRow', true);
+    // debugLog::kintDebugDrupal($row, 'getParagraphRow', true);
     if ($row) {
       $configurations = [
         'source' => [
@@ -121,6 +121,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
           if ($fieldName == 'paragraph_type' || empty($val['data']))
             continue;
           $this->MigrationAutoImport->setData($val);
+          // debugLog::kintDebugDrupal($val, $fieldName . '---', true);
           // si l'import des elements enfants s'effectuent bien ? on garde ses
           // id.
           if ($this->MigrationAutoImport->runImport()) {

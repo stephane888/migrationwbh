@@ -7,6 +7,8 @@ use Drupal\migrate_plus\DataParserPluginManager;
 use Drupal\migrate\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\file\Entity\File;
 use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 
@@ -24,6 +26,7 @@ class MigrationAutoImport {
    * @var array
    */
   protected $fieldData;
+  protected static $configImport;
 
   /**
    * Données brute provenant du site distant.
@@ -64,7 +67,8 @@ class MigrationAutoImport {
   protected $bundle = null;
   protected $EntityValide = [
     'block_content',
-    'paragraph'
+    'paragraph',
+    'node'
   ];
 
   /**
@@ -76,8 +80,15 @@ class MigrationAutoImport {
     'block_content_type',
     'revision_user',
     'content_translation_uid',
-    'paragraph_type'
+    'paragraph_type',
+    "node_type",
+    "user",
+    "revision_uid",
+    "uid",
+    "taxonomy_term", //
+    "field_localisation" //
   ];
+  protected $SkypRun;
 
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager) {
     $this->MigrationPluginManager = $MigrationPluginManager;
@@ -89,8 +100,15 @@ class MigrationAutoImport {
       throw new \ErrorException('Données non valide');
       \Stephane888\Debug\debugLog::kintDebugDrupal($data, 'MigrationAutoImport-data-error-', true);
     }
-
+    $this->getConfigImport();
+    $this->SkypRun = false;
     $this->fieldData = $data;
+  }
+
+  protected function getConfigImport() {
+    if (!static::$configImport) {
+      static::$configImport = \Drupal::config('migrationwbh.import')->getRawData();
+    }
   }
 
   public function runImport() {
@@ -122,6 +140,8 @@ class MigrationAutoImport {
   }
 
   protected function runMigrate(array $configuration) {
+    if ($this->SkypRun)
+      return true;
     $plugin_id = 'wbhorizon_entites_auto';
     /**
      *
@@ -151,7 +171,45 @@ class MigrationAutoImport {
    */
   protected function getDatasInformation(array &$configuration) {
     $rawDatas = $this->rawDatas['data'];
-    if (empty($rawDatas[0])) {
+    // import 1 image
+    if (!empty($rawDatas['type']) && $rawDatas['type'] == 'file--file') {
+      $this->SkypRun = true;
+      $oldFile = File::load($rawDatas['attributes']['drupal_internal__fid']);
+      if (!empty($oldFile)) {
+        $oldFileA = $oldFile->toArray();
+        if ($oldFileA['uuid'] == $rawDatas['id'])
+          return;
+        else {
+          $oldFile->delete();
+        }
+      }
+      $filesystem = \Drupal::service('file_system');
+      $icon_file_destination = $rawDatas['attributes']['uri']['value'];
+      $icon_upload_path = explode($rawDatas['attributes']['filename'], $rawDatas['attributes']['uri']['value']);
+      $filesystem->prepareDirectory($icon_upload_path[0], FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+      // Save the default icon file.
+      $url = trim(static::$configImport['external_domain'], '/') . $rawDatas['attributes']['uri']['url'];
+      $icon_file_uri = $filesystem->saveData(file_get_contents($url), $icon_file_destination);
+      // Create the icon file entity.
+      $icon_entity_values = [
+        'uri' => $icon_file_uri,
+        'uid' => \Drupal::currentUser()->id(),
+        'uuid' => $rawDatas['id'],
+        'status' => FILE_STATUS_PERMANENT,
+        'fid' => $rawDatas['attributes']['drupal_internal__fid']
+      ];
+      $new_icon = File::create($icon_entity_values);
+      $new_icon->save();
+      // file usage
+      if ($new_icon->id()) {
+        /** @var \Drupal\file\FileUsage\DatabaseFileUsageBackend $file_usage */
+        $file_usage = \Drupal::service('file.usage');
+        // Add usage of the new icon file.
+        $file_usage->add($new_icon, 'migrationwbh', 'migration_auto_import', $rawDatas['attributes']['drupal_internal__fid']);
+      }
+      return;
+    }
+    elseif (empty($rawDatas[0])) {
       \Stephane888\Debug\debugLog::$max_depth = 10;
       $dbg = [
         'fieldData' => $this->fieldData,
@@ -176,8 +234,12 @@ class MigrationAutoImport {
       $this->getSourceFieldsAndProcessMapping($configuration);
     }
     else {
+      $dbg = [
+        'fieldData' => $this->fieldData,
+        'rawData' => $this->rawDatas
+      ];
       \Stephane888\Debug\debugLog::$max_depth = 10;
-      \Stephane888\Debug\debugLog::kintDebugDrupal($this->rawDatas, 'MigrationAutoImport-entity-non-valide-', true);
+      \Stephane888\Debug\debugLog::kintDebugDrupal($dbg, 'MigrationAutoImport-entity-non-valide-', true);
     }
   }
 
@@ -204,10 +266,32 @@ class MigrationAutoImport {
           if (in_array($fieldName, $this->unMappingFields) || empty($val['data']))
             continue;
           // à la fin du process, on doit obtenir des données valide.
+          // \Stephane888\Debug\debugLog::kintDebugDrupal($val,
+          // 'MigrationAutoImport---' . $fieldName . '---', true);
           $relationship = new MigrationAutoImport($this->MigrationPluginManager, $this->DataParserPluginManager);
-        /**
-         * Apres traitement, on mettra à jour $this->rawDatas, fields
-         */
+          $relationship->setData($val);
+          /**
+           * Apres traitement, on mettra à jour $this->rawDatas, fields
+           */
+          if ($relationship->runImport()) {
+            // $dbg = [
+            // 'fieldname' => $fieldName,
+            // 'val' => $val,
+            // 'fieldData' => $this->fieldData,
+            // 'configuration' => $configuration,
+            // 'rawData' => $this->rawDatas
+            // ];
+            // \Stephane888\Debug\debugLog::$max_depth = 10;
+            // \Stephane888\Debug\debugLog::kintDebugDrupal($dbg,
+            // 'MigrationAutoImport-new-insatance--', true);
+            if (!empty($val['data'][0]))
+              foreach ($val['data'] as $valRelation) {
+                $data_rows[$k][$fieldName][] = $valRelation['meta']['drupal_internal__target_id'];
+              }
+            else {
+              $data_rows[$k][$fieldName] = $val['data']['meta']['drupal_internal__target_id'];
+            }
+          }
         }
       }
     }
@@ -261,15 +345,19 @@ class MigrationAutoImport {
    * Permet de recuper les données à partir de l'url;
    */
   protected function retrieveDatas() {
+    $url = $this->fieldData['links']['related']['href'];
     $conf = [
-      'data_fetcher_plugin' => 'http'
+      'data_fetcher_plugin' => 'http',
+      'urls' => [
+        $url
+      ]
     ];
+
     /**
      *
      * @var \Drupal\migrationwbh\Plugin\migrate_plus\data_parser\JsonApi $json_api
      */
     $json_api = $this->DataParserPluginManager->createInstance('json_api', $conf);
-    $url = $this->fieldData['links']['related']['href'];
     $this->rawDatas = $json_api->getDataByExternalApi($url);
   }
 

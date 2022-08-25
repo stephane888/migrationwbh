@@ -13,6 +13,3 @@
 /**
  * Implement hook_preprocess_page
  */
-function migrationwbh_preprocess_page(&$variables) {
-  // dump(\Drupal::routeMatch()->getRouteName());
-}

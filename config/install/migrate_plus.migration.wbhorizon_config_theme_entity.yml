@@ -129,6 +129,10 @@ source:
       name: changed
       label: 'changed'
       selector: attributes/changed
+    -
+      name: logo
+      label: 'Logo'
+      selector: relationships/logo
           
 
 
@@ -166,6 +170,11 @@ process:
   site_config: site_config
   created: created
   changed: changed
+  logo: 
+    plugin: image_entity_import
+    source: logo
+    destination: 'constants/file_destination'
+    skip_on_missing_source: true
   
 
 # Destination

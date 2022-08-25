@@ -43,7 +43,8 @@ final class ParagraphSource extends Url {
       // dump($conf);
     }
     else {
-      $this->messenger()->addWarning(' Constants.url  not found ');
+      $this->messenger()->addWarning(' Constants.url  not found ..');
+      dump($configuration);
       $configuration['urls'] = [
         ''
       ];
