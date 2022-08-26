@@ -37,6 +37,7 @@ class MigrationWbhImport extends ConfigFormBase {
     'wbhorizon_block_content_f_h' => 'wbhorizon_block_content_f_h',
     'wbhorizon_menu_link_content' => 'wbhorizon_menu_link_content',
     'wbhorizon_block' => 'wbhorizon_block',
+    'wbhorizon_block_content_menu' => 'wbhorizon_block_content_menu',
     'wbhorizon_block_content_bp' => 'wbhorizon_block_content_bp'
   ];
 

@@ -120,14 +120,29 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
         foreach ($value['relationships'] as $fieldName => $val) {
           if ($fieldName == 'paragraph_type' || empty($val['data']))
             continue;
-          $this->MigrationAutoImport->setData($val);
-          // debugLog::kintDebugDrupal($val, $fieldName . '---', true);
-          // si l'import des elements enfants s'effectuent bien ? on garde ses
-          // id.
-          if ($this->MigrationAutoImport->runImport()) {
-            foreach ($val['data'] as $valRelation) {
-              $attributes[$fieldName][] = $valRelation['meta']['drupal_internal__target_id'];
+          try {
+            $this->MigrationAutoImport->setData($val);
+            // debugLog::kintDebugDrupal($val, $fieldName . '---', true);
+            // si l'import des elements enfants s'effectuent bien ? on garde ses
+            // id.
+            if ($this->MigrationAutoImport->runImport()) {
+              if ($val['data'][0])
+                foreach ($val['data'] as $valRelation) {
+                  $attributes[$fieldName][] = $valRelation['meta']['drupal_internal__target_id'];
+                }
+              else
+                $attributes[$fieldName] = $val['data']['meta']['drupal_internal__target_id'];
             }
+          }
+          catch (\Exception $e) {
+            $dbg = [
+              $e->getMessage(),
+              'conf' => $this->MigrationAutoImport->getCurrentConf(),
+              'datas' => $this->MigrationAutoImport->getCurrentData(),
+              $e->getTrace()
+            ];
+            \Stephane888\Debug\debugLog::$max_depth = 10;
+            \Stephane888\Debug\debugLog::kintDebugDrupal($dbg, 'ParagraphsRecursive-auto-import-error--', true);
           }
         }
       // process

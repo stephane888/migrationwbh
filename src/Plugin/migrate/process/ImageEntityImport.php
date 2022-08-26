@@ -19,13 +19,12 @@ use Drupal\migrate\Plugin\migrate\process\FileCopy;
  * )
  */
 final class ImageEntityImport extends ImageImport {
-  
+
   /**
    *
    * {@inheritdoc}
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    //
     if (!empty($value['uri']['url'])) {
       $value = "http://wb-horizon.kksa" . $value['uri']['url'];
       $this->configuration['alt'] = 'none';
@@ -35,5 +34,5 @@ final class ImageEntityImport extends ImageImport {
     // 'image_entity_import__transform', true);
     return null;
   }
-  
+
 }

@@ -36,7 +36,6 @@ final class BasicEntitySource extends Url {
     }
     else {
       $this->messenger()->addWarning(' Constants.url  not found .');
-      dump($configuration);
       $configuration['urls'] = [
         ''
       ];
