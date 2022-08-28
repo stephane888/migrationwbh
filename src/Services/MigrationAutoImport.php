@@ -24,6 +24,7 @@ class MigrationAutoImport {
    * ( d'une source migrate ).
    *
    * @var array
+   * @deprecated
    */
   protected $fieldData;
   protected static $configImport;
@@ -40,6 +41,7 @@ class MigrationAutoImport {
    * $rawDatas[links]
    *
    * @var array
+   * @deprecated
    */
   protected array $rawDatas = [];
 
@@ -81,6 +83,7 @@ class MigrationAutoImport {
    * les champs qui serront ignorées dans le mapping.
    *
    * @var array
+   * @deprecated
    */
   protected $unMappingFields = [
     'block_content_type',
@@ -95,12 +98,17 @@ class MigrationAutoImport {
     "vid",
     "field_localisation" //
   ];
+  /**
+   *
+   * @deprecated
+   */
   protected $SkypRun;
 
   /**
    * Pour pouvoir recuperer la configuration.
    *
    * @var array
+   * @deprecated
    */
   protected $constructConf = [];
   private static $debugInfo = [];
@@ -113,6 +121,12 @@ class MigrationAutoImport {
     $this->DataParserPluginManager = $DataParserPluginManager;
   }
 
+  /**
+   *
+   * @deprecated
+   * @param array $data
+   * @throws \ErrorException
+   */
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       throw new \ErrorException('Données non valide');
@@ -123,6 +137,10 @@ class MigrationAutoImport {
     $this->fieldData = $data;
   }
 
+  /**
+   *
+   * @deprecated
+   */
   protected function getConfigImport() {
     if (!static::$configImport) {
       static::$configImport = \Drupal::config('migrationwbh.import')->getRawData();
