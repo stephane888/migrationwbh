@@ -4,6 +4,8 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
+use Drupal\migrate\MigrateExecutable;
+use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity\File;
@@ -11,44 +13,52 @@ use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\DebugCode;
 
-class MigrationImportAutoNode extends MigrationImportAutoBase {
-
+class MigrationImportAutoFile extends MigrationImportAutoBase {
+  protected $fieldData;
   /**
-   * disponible pour des entités avec bundles.
+   * Données brute provenant du site distant.
+   * Structure :
+   * un array donc chaque ligne represente une donnée.
+   * $rawDatas[data]
+   * $rawDatas[data][0--n][attributes]
+   * $rawDatas[data][0--n][relationships]
+   * $rawDatas[data][0--n][links]
+   * $rawDatas[data][0--n][type]
+   * $rawDatas[links]
+   *
+   * @var array
    */
-  protected $bundle = null;
+  protected array $rawDatas = [];
+  /**
+   * entityTypeId ( node, block_content ...
+   * )
+   */
+  protected $entityTypeId = null;
 
   /**
    * les champs qui serront ignorées dans le mapping.
-   * * Les colonnes avec les dates posent probleme. ( il faudra pouvoir les
-   * identifiers et appliqué une conversion ).
    *
    * @var array
    */
   private $unMappingFields = [
-    'drupal_internal__vid',
-    'revision_timestamp',
-    'revision_log',
     'created',
     'changed'
   ];
-  private $unGetRelationships = [
-    "node_type",
-    'revision_uid',
-    'uid'
-  ];
+  private $unGetRelationships = [];
+  private $SkypRunMigrate = false;
+  protected static $configImport;
 
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
-    $this->bundle = $bundle;
   }
 
   public function runImport() {
-    if (!$this->fieldData && !$this->url)
-      throw new \ErrorException(' Vous devez definir fieldData ou une url ');
+    if (!$this->fieldData)
+      throw DebugCode::exception(' Vous devez definir fieldData ', $this->fieldData);
     $this->retrieveDatas();
+    $this->getConfigImport();
     /**
      * --
      *
@@ -56,12 +66,11 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
      */
     $configuration = [
       'destination' => [
-        'plugin' => 'entity:' . $this->entityTypeId,
-        'default_bundle' => $this->bundle
+        'plugin' => 'entity:' . $this->entityTypeId
       ],
       'source' => [
         'ids' => [
-          'drupal_internal__nid' => [
+          'drupal_internal__fid' => [
             'type' => 'integer'
           ]
         ],
@@ -70,8 +79,8 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-
     return $this->loopDatas($configuration);
+    //
   }
 
   /**
@@ -80,17 +89,23 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
    * @param array $configuration
    */
   protected function buildDataRows(array $row, array &$data_rows) {
-    $k = 0;
-    $data_rows[$k] = $row['attributes'];
-    // Set type
-    $data_rows[$k]['type'] = $row['relationships']['node_type']['data']['meta']["drupal_internal__target_id"];
-    $this->bundle = $data_rows[$k]['type'];
-    // Get relationships datas
-    foreach ($row['relationships'] as $fieldName => $value) {
-      if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
-        continue;
-      $this->getRelationShip($data_rows, $k, $fieldName, $value);
+    // On recupere le fichier :
+    $file = File::load($row['attributes']['drupal_internal__fid']);
+    if (!$file) {
+      /**
+       *
+       * @var \Drupal\Core\File\FileSystem $filesystem
+       */
+      $filesystem = \Drupal::service('file_system');
+      $icon_file_destination = $row['attributes']['uri']['value'];
+      $icon_upload_path = explode($row['attributes']['filename'], $row['attributes']['uri']['value']);
+      $filesystem->prepareDirectory($icon_upload_path[0], FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
+      // Save the file.
+      $url = trim(static::$configImport['external_domain'], '/') . $row['attributes']['uri']['url'];
+      $filesystem->saveData(file_get_contents($url), $icon_file_destination);
     }
+    // on va creer l'entité
+    $data_rows[0] = $row['attributes'];
   }
 
   /**
@@ -102,14 +117,20 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
   protected function buildMappingProcess($configuration, array &$process) {
     if (!empty($configuration['source']['data_rows'][0])) {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
-        if ($fieldName == 'drupal_internal__nid') {
-          $process['nid'] = $fieldName;
+        if ($fieldName == 'drupal_internal__fid') {
+          $process['fid'] = $fieldName;
         }
         elseif (in_array($fieldName, $this->unMappingFields))
           continue;
         else
           $process[$fieldName] = $fieldName;
       }
+    }
+  }
+
+  protected function getConfigImport() {
+    if (!static::$configImport) {
+      static::$configImport = \Drupal::config('migrationwbh.import')->getRawData();
     }
   }
 
@@ -121,7 +142,8 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
-    if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__nid'])) {
+    $this->performRawDatas();
+    if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__fid'])) {
       return true;
     }
     else {
@@ -134,16 +156,12 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
   }
 
   protected function addToLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
 
   protected function addDebugLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
 

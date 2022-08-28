@@ -13,3 +13,20 @@
 /**
  * Implement hook_preprocess_page
  */
+
+/**
+ * Implements hook_theme().
+ */
+function migrationwbh_theme($existing, $type, $theme, $path) {
+  return [
+    'migrationwbh_debug_migrate' => [
+      'variables' => [
+        'configuration' => null,
+        'data' => NULL,
+        'raw_data' => NULL,
+        'error' => NULL
+      ],
+      'template' => 'migrationwbh-debug-migrate'
+    ]
+  ];
+}

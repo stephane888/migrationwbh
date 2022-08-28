@@ -98,6 +98,10 @@ class MigrationAutoImport {
    * @var array
    */
   protected $constructConf = [];
+  private static $debugInfo = [];
+  private static $subConf = [];
+  private static $SubRawDatas = [];
+  public $rollback = false;
 
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager) {
     $this->MigrationPluginManager = $MigrationPluginManager;
@@ -121,64 +125,114 @@ class MigrationAutoImport {
   }
 
   /**
-   *
-   * @deprecated
-   * @throws \ErrorException
-   * @return boolean
+   * Le constructeur determine et initialise la class chargé de migrer l'entité.
    */
-  public function runImportOLD() {
+  public function runImport() {
     if (!$this->fieldData)
       throw new \ErrorException(' Vous devez definir fieldData ');
-    $configuration = $this->constructPlugin();
-    $dbg = [
-      'fieldData' => $this->fieldData,
-      'rawData' => $this->rawDatas,
-      'configuration' => $configuration
-    ];
-
-    \Stephane888\Debug\debugLog::$max_depth = 10;
-    $fileName = (!empty($this->fieldData['data'][0])) ? $this->fieldData['data'][0]['type'] : $this->fieldData['data']['type'];
-    $fileName .= '-----';
-    if ((!empty($this->rawDatas['data'][0]))) {
-      $fileName .= $this->rawDatas['data'][0]['type'];
-      if (!empty($this->rawDatas['data'][0]['attributes']['drupal_internal__fid']))
-        $fileName .= '___' . $this->rawDatas['data'][0]['attributes']['drupal_internal__fid'] . '___';
-    }
-    else {
-      $fileName .= $this->rawDatas['data']['type'];
-      if (!empty($this->rawDatas['data']['attributes']['drupal_internal__fid']))
-        $fileName .= '___' . $this->rawDatas['data']['attributes']['drupal_internal__fid'] . '___';
-    }
-
-    \Stephane888\Debug\debugLog::kintDebugDrupal($dbg, $fileName, true);
-    return $this->runMigrate($configuration);
-  }
-
-  /**
-   * On construit la configuration du plugin migration.
-   * Le constructeur determine et initialise la class chargé de construire la
-   * configuration.
-   */
-  protected function runImport() {
+    if (!empty($this->fieldData['data']) && empty($this->fieldData['data'][0]))
+      $this->fieldData['data'][0] = $this->fieldData['data'];
     // file type on data
     if (!empty($this->fieldData['data'][0])) {
       $row = $this->fieldData['data'][0];
-      $type = explode("--", $row);
+      $type = explode("--", $row['type']);
       $this->entityTypeId = $type[0];
-      // entité de contenu.
+      // Entité avec bundle.
       if ($type[0] != $type[1]) {
         $this->bundle = $type[1];
         if ($this->entityTypeId == 'node') {
           $MigrationImportAutoNode = new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoNode->setData($this->fieldData);
-          return $MigrationImportAutoNode->runImport();
+          $MigrationImportAutoNode->setRollback($this->rollback);
+          $results = $MigrationImportAutoNode->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoNode->getLogs(),
+            'errors' => $MigrationImportAutoNode->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoNode->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoNode->getRawDatas();
+          return $results;
         }
-        else {
-          //
+        elseif ($this->entityTypeId == 'taxonomy_term') {
+          $MigrationImportAutoTaxoTerm = new MigrationImportAutoTaxoTerm($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoTaxoTerm->setData($this->fieldData);
+          $MigrationImportAutoTaxoTerm->setRollback($this->rollback);
+          $results = $MigrationImportAutoTaxoTerm->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoTaxoTerm->getLogs(),
+            'errors' => $MigrationImportAutoTaxoTerm->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoTaxoTerm->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoTaxoTerm->getRawDatas();
+          return $results;
+        }
+        elseif ($this->entityTypeId == 'paragraph') {
+          $MigrationImportAutoParagraph = new MigrationImportAutoParagraph($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoParagraph->setData($this->fieldData);
+          $MigrationImportAutoParagraph->setRollback($this->rollback);
+          $results = $MigrationImportAutoParagraph->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoParagraph->getLogs(),
+            'errors' => $MigrationImportAutoParagraph->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoParagraph->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoParagraph->getRawDatas();
+          return $results;
         }
       }
+      elseif ($this->entityTypeId == 'block_content') {
+        $MigrationImportAutoBlockContent = new MigrationImportAutoBlockContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+        $MigrationImportAutoBlockContent->setData($this->fieldData);
+        $MigrationImportAutoBlockContent->setRollback($this->rollback);
+        $results = $MigrationImportAutoBlockContent->runImport();
+        static::$debugInfo[$this->entityTypeId][] = [
+          'logs' => $MigrationImportAutoBlockContent->getLogs(),
+          'errors' => $MigrationImportAutoBlockContent->getDebugLog()
+        ];
+        static::$subConf[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getConfiguration();
+        static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getRawDatas();
+        return $results;
+      }
+      elseif ($this->entityTypeId == 'file') {
+        $MigrationImportAutoFile = new MigrationImportAutoFile($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+        $MigrationImportAutoFile->setData($this->fieldData);
+        $MigrationImportAutoFile->setRollback($this->rollback);
+        $results = $MigrationImportAutoFile->runImport();
+        static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoFile->getLogs();
+        return $results;
+      }
+    }
+    // Entité sans bundle.
+    else {
     }
     return false;
+  }
+
+  public function getEntityTypeId() {
+    return $this->entityTypeId;
+  }
+
+  function testNodeImport($url) {
+    $this->entityTypeId = 'node';
+    $MigrationImportAutoNode = new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+    $MigrationImportAutoNode->setUrl($url);
+    // $MigrationImportAutoNode->setRollback(true);
+    // $MigrationImportAutoNode->setImport(false);
+    $re = [
+      'resul' => $MigrationImportAutoNode->runImport(),
+      'conf' => [
+        $MigrationImportAutoNode->getConfiguration(),
+        'subConf' => static::$subConf
+      ],
+      'rawDatas' => [
+        $MigrationImportAutoNode->getRawDatas(),
+        'SubRawDatas' => static::$SubRawDatas
+      ],
+      'error' => $MigrationImportAutoNode->getLogs()
+    ];
+    debugLog::$max_depth = 15;
+    debugLog::kintDebugDrupal($MigrationImportAutoNode->getLogs(), 'testNodeImport', true);
+    return $re;
   }
 
   /**
@@ -559,6 +613,40 @@ class MigrationAutoImport {
    */
   public function getCurrentConf() {
     return $this->constructConf;
+  }
+
+  /**
+   *
+   * @deprecated
+   * @throws \ErrorException
+   * @return boolean
+   */
+  public function runImportOLD() {
+    if (!$this->fieldData)
+      throw new \ErrorException(' Vous devez definir fieldData ');
+    $configuration = $this->constructPlugin();
+    $dbg = [
+      'fieldData' => $this->fieldData,
+      'rawData' => $this->rawDatas,
+      'configuration' => $configuration
+    ];
+
+    \Stephane888\Debug\debugLog::$max_depth = 10;
+    $fileName = (!empty($this->fieldData['data'][0])) ? $this->fieldData['data'][0]['type'] : $this->fieldData['data']['type'];
+    $fileName .= '-----';
+    if ((!empty($this->rawDatas['data'][0]))) {
+      $fileName .= $this->rawDatas['data'][0]['type'];
+      if (!empty($this->rawDatas['data'][0]['attributes']['drupal_internal__fid']))
+        $fileName .= '___' . $this->rawDatas['data'][0]['attributes']['drupal_internal__fid'] . '___';
+    }
+    else {
+      $fileName .= $this->rawDatas['data']['type'];
+      if (!empty($this->rawDatas['data']['attributes']['drupal_internal__fid']))
+        $fileName .= '___' . $this->rawDatas['data']['attributes']['drupal_internal__fid'] . '___';
+    }
+
+    \Stephane888\Debug\debugLog::kintDebugDrupal($dbg, $fileName, true);
+    return $this->runMigrate($configuration);
   }
 
 }
