@@ -29,11 +29,6 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-  /**
-   * entityTypeId ( node, block_content ...
-   * )
-   */
-  protected $entityTypeId = null;
 
   /**
    * les champs qui serront ignorées dans le mapping.

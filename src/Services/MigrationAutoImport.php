@@ -65,6 +65,11 @@ class MigrationAutoImport {
    * disponible pour des entités avec bundles.
    */
   protected $bundle = null;
+  /**
+   *
+   * @deprecated
+   * @var array
+   */
   protected $EntityValide = [
     'block_content',
     'paragraph',
@@ -179,28 +184,47 @@ class MigrationAutoImport {
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoParagraph->getRawDatas();
           return $results;
         }
+        elseif ($this->entityTypeId == 'block_content') {
+          $MigrationImportAutoBlockContent = new MigrationImportAutoBlockContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoBlockContent->setData($this->fieldData);
+          $MigrationImportAutoBlockContent->setRollback($this->rollback);
+          $results = $MigrationImportAutoBlockContent->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoBlockContent->getLogs(),
+            'errors' => $MigrationImportAutoBlockContent->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getRawDatas();
+          return $results;
+        }
       }
-      elseif ($this->entityTypeId == 'block_content') {
-        $MigrationImportAutoBlockContent = new MigrationImportAutoBlockContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
-        $MigrationImportAutoBlockContent->setData($this->fieldData);
-        $MigrationImportAutoBlockContent->setRollback($this->rollback);
-        $results = $MigrationImportAutoBlockContent->runImport();
-        static::$debugInfo[$this->entityTypeId][] = [
-          'logs' => $MigrationImportAutoBlockContent->getLogs(),
-          'errors' => $MigrationImportAutoBlockContent->getDebugLog()
-        ];
-        static::$subConf[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getConfiguration();
-        static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getRawDatas();
-        return $results;
+      else {
+        switch ($this->entityTypeId) {
+          case 'file':
+            $MigrationImportAutoFile = new MigrationImportAutoFile($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoFile->setData($this->fieldData);
+            $MigrationImportAutoFile->setRollback($this->rollback);
+            $results = $MigrationImportAutoFile->runImport();
+            static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoFile->getLogs();
+            return $results;
+            break;
+          case 'menu':
+            $MigrationImportAutoMenu = new MigrationImportAutoMenu($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoMenu->setData($this->fieldData);
+            $MigrationImportAutoMenu->setRollback($this->rollback);
+            $results = $MigrationImportAutoMenu->runImport();
+            static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoMenu->getLogs();
+            return $results;
+            break;
+          default:
+            ;
+            break;
+        }
       }
-      elseif ($this->entityTypeId == 'file') {
-        $MigrationImportAutoFile = new MigrationImportAutoFile($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
-        $MigrationImportAutoFile->setData($this->fieldData);
-        $MigrationImportAutoFile->setRollback($this->rollback);
-        $results = $MigrationImportAutoFile->runImport();
-        static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoFile->getLogs();
-        return $results;
-      }
+      // Menu--menu => qui doit importer les menu_link_content.
+      // On doit importer les pathotos
+      // Les produits
+      // Les blocks
     }
     // Entité sans bundle.
     else {
@@ -291,6 +315,8 @@ class MigrationAutoImport {
    * ).
    * - bundle ( s'il existe ).
    * -
+   *
+   * @deprecated
    */
   protected function getDatasInformation(array &$configuration) {
     $rawDatas = $this->rawDatas['data'];
@@ -440,6 +466,7 @@ class MigrationAutoImport {
    *
    * @param array $firstRow
    * @param array $configuration
+   * @deprecated
    */
   protected function getSourceFieldsAndProcessMapping(array &$configuration) {
     $processMapping = [];
@@ -501,6 +528,8 @@ class MigrationAutoImport {
 
   /**
    * --
+   *
+   * @deprecated
    */
   public function getSourceFieldsAndProcessMappingSimple(array &$configuration) {
     $processMapping = [];
@@ -521,6 +550,7 @@ class MigrationAutoImport {
 
   /**
    *
+   * @deprecated
    * @param array $data_rows
    * @param array $processMapping
    */
@@ -548,6 +578,7 @@ class MigrationAutoImport {
    * Champs permettant d'identifier une ligne.
    *
    * @param array $configuration
+   * @deprecated
    */
   protected function setIdentificatorRow(array &$configuration) {
     if ($this->entityTypeId == 'node') {
@@ -571,6 +602,7 @@ class MigrationAutoImport {
    *
    * @param string $entityTypeId
    * @return boolean
+   * @deprecated
    */
   protected function checkEntityValide($entityTypeId) {
     return (in_array($entityTypeId, $this->EntityValide)) ? true : false;
@@ -578,6 +610,8 @@ class MigrationAutoImport {
 
   /**
    * Permet de recuper les données à partir de l'url;
+   *
+   * @deprecated
    */
   protected function retrieveDatas() {
     $url = $this->fieldData['links']['related']['href'];
@@ -609,6 +643,7 @@ class MigrationAutoImport {
 
   /**
    *
+   * @deprecated
    * @return array
    */
   public function getCurrentConf() {

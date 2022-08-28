@@ -29,11 +29,6 @@ class MigrationImportAutoTaxoTerm extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-  /**
-   * entityTypeId ( node, block_content ...
-   * )
-   */
-  protected $entityTypeId = null;
 
   /**
    * disponible pour des entités avec bundles.
@@ -106,7 +101,16 @@ class MigrationImportAutoTaxoTerm extends MigrationImportAutoBase {
     // Set vid
     $data_rows[$k]['vid'] = $row['relationships']['vid']['data']['meta']["drupal_internal__target_id"];
     $this->bundle = $data_rows[$k]['vid'];
-    // Loop relationFied.
+    // Get relationships datas
+    foreach ($row['relationships'] as $fieldName => $value) {
+      if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
+        continue;
+      // Les termes de premier niveau possede un parent donc l'id est "virtual".
+      // On ne doit pas l'importer
+      if ($fieldName == 'parent' && ((!empty($value['data'][0]['id']) && $value['data'][0]['id'] == "virtual") || (!empty($value['data']['id']) && $value['data']['id'] == "virtual")))
+        continue;
+      $this->getRelationShip($data_rows, $k, $fieldName, $value);
+    }
   }
 
   /**

@@ -12,8 +12,9 @@ use Drupal\file\Entity\File;
 use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\DebugCode;
+use PhpParser\Node\Stmt\Static_;
 
-class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
+class MigrationImportAutoMenu extends MigrationImportAutoBase {
   protected $fieldData;
   /**
    * Données brute provenant du site distant.
@@ -31,24 +32,17 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
   protected array $rawDatas = [];
 
   /**
-   * disponible pour des entités avec bundles.
-   */
-  protected $bundle = null;
-
-  /**
    * les champs qui serront ignorées dans le mapping.
    *
    * @var array
    */
   private $unMappingFields = [
     "drupal_internal__revision_id",
-    "revision_created",
-    "revision_log"
+    'created',
+    'content_translation_changed'
   ];
   private $unGetRelationships = [
-    "block_content_type",
-    "revision_user",
-    "content_translation_uid"
+    "paragraph_type"
   ];
   private $SkypRunMigrate = false;
 
@@ -96,14 +90,8 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
     // Set type
-    $data_rows[$k]['type'] = $row['relationships']['block_content_type']['data']['meta']["drupal_internal__target_id"];
+    $data_rows[$k]['type'] = $row['relationships']['paragraph_type']['data']['meta']["drupal_internal__target_id"];
     $this->bundle = $data_rows[$k]['type'];
-    // Get relationships datas
-    foreach ($row['relationships'] as $fieldName => $value) {
-      if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
-        continue;
-      $this->getRelationShip($data_rows, $k, $fieldName, $value);
-    }
   }
 
   /**
@@ -144,6 +132,20 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
       ];
       throw DebugCode::exception('validationDatas', $dbg);
     }
+  }
+
+  protected function addToLogs($data, $key = null) {
+    if ($this->entityTypeId && $this->bundle)
+      static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
+    elseif ($this->entityTypeId)
+      static::$logs[$this->entityTypeId][$key][] = $data;
+  }
+
+  protected function addDebugLogs($data, $key = null) {
+    if ($this->entityTypeId && $this->bundle)
+      static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
+    elseif ($this->entityTypeId)
+      static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
 
 }

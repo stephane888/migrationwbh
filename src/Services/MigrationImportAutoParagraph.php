@@ -30,11 +30,6 @@ class MigrationImportAutoParagraph extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-  /**
-   * entityTypeId ( node, block_content ...
-   * )
-   */
-  protected $entityTypeId = null;
 
   /**
    * disponible pour des entités avec bundles.
