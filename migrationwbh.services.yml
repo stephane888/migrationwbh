@@ -16,3 +16,15 @@ services:
   migrationwbh.migrate_auto_import.site_internet_entity:
     class: Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','site_internet_entity','']
+    
+  migrationwbh.migrate_auto_import.block_content:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoBlockContent
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','block_content','']
+    
+  migrationwbh.migrate_auto_import.config_theme_entity:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','config_theme_entity']
+    
+  migrationwbh.migrate_auto_import.block:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoBlock
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','block']

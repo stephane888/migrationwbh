@@ -117,6 +117,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
+    $this->performRawDatas();
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
       return true;
     }
@@ -130,16 +131,12 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
   }
 
   protected function addToLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
 
   protected function addDebugLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
 

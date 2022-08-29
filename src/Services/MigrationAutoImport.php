@@ -188,16 +188,21 @@ class MigrationAutoImport {
             $results = $MigrationImportAutoBlock->runImport();
             static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoBlock->getLogs();
             return $results;
+          case 'config_theme_entity':
+            $MigrationImportAutoConfigThemeEntity = new MigrationImportAutoConfigThemeEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoConfigThemeEntity->setData($this->fieldData);
+            $MigrationImportAutoConfigThemeEntity->setRollback($this->rollback);
+            $results = $MigrationImportAutoConfigThemeEntity->runImport();
+            static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoConfigThemeEntity->getLogs();
+            return $results;
             break;
           default:
             //
             break;
         }
       }
-      // Menu--menu => qui doit importer les menu_link_content.
-      // On doit importer les pathotos
+      // On doit importer les pathutos
       // Les produits
-      // Les blocks
     }
     // Entité sans bundle.
     else {

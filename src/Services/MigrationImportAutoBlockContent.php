@@ -95,6 +95,8 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
   protected function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
+    // add uuid
+    $data_rows[$k]['uuid'] = $row['id'];
     // Set type
     $data_rows[$k]['type'] = $row['relationships']['block_content_type']['data']['meta']["drupal_internal__target_id"];
     $this->bundle = $data_rows[$k]['type'];
@@ -134,6 +136,7 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
+    $this->performRawDatas();
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
       return true;
     }

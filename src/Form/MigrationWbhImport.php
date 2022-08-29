@@ -8,6 +8,9 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrationwbh\Services\MigrationImport;
 use Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity;
+use Drupal\migrationwbh\Services\MigrationImportAutoBlockContent;
+use Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity;
+use Drupal\migrationwbh\Services\MigrationImportAutoBlock;
 use Drupal\Core\Render\Renderer;
 use Stephane888\Debug\debugLog;
 
@@ -55,14 +58,35 @@ class MigrationWbhImport extends ConfigFormBase {
 
   /**
    *
+   * @var MigrationImportAutoBlockContent
+   */
+  protected $MigrationImportAutoBlockContent;
+
+  /**
+   *
+   * @var MigrationImportAutoConfigThemeEntity
+   */
+  protected $MigrationImportAutoConfigThemeEntity;
+
+  /**
+   *
+   * @var MigrationImportAutoBlock
+   */
+  protected $MigrationImportAutoBlock;
+
+  /**
+   *
    * @param ConfigFactoryInterface $config_factory
    * @param MigrationImport $MigrationImport
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity) {
+  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity, MigrationImportAutoBlockContent $MigrationImportAutoBlockContent, MigrationImportAutoConfigThemeEntity $MigrationImportAutoConfigThemeEntity, MigrationImportAutoBlock $MigrationImportAutoBlock) {
     parent::__construct($config_factory);
     $this->MigrationImport = $MigrationImport;
     $this->Renderer = $Renderer;
     $this->MigrationImportAutoSiteInternetEntity = $MigrationImportAutoSiteInternetEntity;
+    $this->MigrationImportAutoBlockContent = $MigrationImportAutoBlockContent;
+    $this->MigrationImportAutoConfigThemeEntity = $MigrationImportAutoConfigThemeEntity;
+    $this->MigrationImportAutoBlock = $MigrationImportAutoBlock;
   }
 
   /**
@@ -70,7 +94,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'));
+    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'));
   }
 
   /**
@@ -310,17 +334,29 @@ class MigrationWbhImport extends ConfigFormBase {
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
     // Import des pages web.
-    $urlPageWeb = trim($config['external_domain'], '/jsonapi/export/page-web');
+    $urlPageWeb = trim($config['external_domain'], '/') . '/jsonapi/export/page-web';
     $this->MigrationImportAutoSiteInternetEntity->setUrl($urlPageWeb);
     $this->MigrationImportAutoSiteInternetEntity->runImport();
     debugLog::$max_depth = 15;
     debugLog::kintDebugDrupal($this->MigrationImportAutoSiteInternetEntity->getLogs(), 'ImportNextSubmit__SiteInternetEntity', true);
     // Import des block_contents.
-    // ***
+    $urlBlockContents = trim($config['external_domain'], '/') . '/jsonapi/export/block_content';
+    $this->MigrationImportAutoBlockContent->setUrl($urlBlockContents);
+    $this->MigrationImportAutoBlockContent->runImport();
+    debugLog::$max_depth = 15;
+    debugLog::kintDebugDrupal($this->MigrationImportAutoBlockContent->getLogs(), 'ImportNextSubmit__BlockContent', true);
     // Import du theme.
-    // ***
+    $urlConfigThemeEntity = trim($config['external_domain'], '/') . '/jsonapi/export/template-theme';
+    $this->MigrationImportAutoConfigThemeEntity->setUrl($urlConfigThemeEntity);
+    $this->MigrationImportAutoConfigThemeEntity->runImport();
+    debugLog::$max_depth = 15;
+    debugLog::kintDebugDrupal($this->MigrationImportAutoConfigThemeEntity->getLogs(), 'ImportNextSubmit__ConfigThemeEntity', true);
     // Import des blocks.
-    // ***
+    $urlBlock = trim($config['external_domain'], '/') . '/jsonapi/export/block';
+    $this->MigrationImportAutoBlock->setUrl($urlBlock);
+    $this->MigrationImportAutoBlock->runImport();
+    debugLog::$max_depth = 15;
+    debugLog::kintDebugDrupal($this->MigrationImportAutoBlock->getLogs(), 'ImportNextSubmit__Block', true);
     // Import des nodes.
     // ***
     $form_state->setRebuild();

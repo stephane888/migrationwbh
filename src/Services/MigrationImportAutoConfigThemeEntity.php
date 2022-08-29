@@ -4,16 +4,9 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
-use Drupal\migrate\MigrateExecutable;
-use Drupal\migrate\MigrateMessage;
-use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\Core\File\FileSystemInterface;
-use Drupal\file\Entity\File;
-use Stephane888\Debug\Utility as UtilityError;
-use Stephane888\Debug\debugLog;
 use Stephane888\Debug\DebugCode;
 
-class MigrationImportAutoSiteInternetEntity extends MigrationImportAutoBase {
+class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
   protected $fieldData;
   /**
    * Données brute provenant du site distant.
@@ -31,34 +24,21 @@ class MigrationImportAutoSiteInternetEntity extends MigrationImportAutoBase {
   protected array $rawDatas = [];
 
   /**
-   * disponible pour des entités avec bundles.
-   */
-  protected $bundle = null;
-
-  /**
    * les champs qui serront ignorées dans le mapping.
    *
    * @var array
    */
   private $unMappingFields = [
-    "drupal_internal__vid",
-    'revision_created',
-    'content_translation_changed',
-    'content_translation_created',
+    'created',
     "changed"
   ];
-  private $unGetRelationships = [
-    "site_internet_entity_type",
-    'revision_user',
-    'content_translation_uid'
-  ];
+  private $unGetRelationships = [];
   private $SkypRunMigrate = false;
 
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
-    $this->bundle = $bundle;
   }
 
   public function runImport() {
@@ -72,8 +52,7 @@ class MigrationImportAutoSiteInternetEntity extends MigrationImportAutoBase {
      */
     $configuration = [
       'destination' => [
-        'plugin' => 'entity:' . $this->entityTypeId,
-        'default_bundle' => $this->bundle
+        'plugin' => 'entity:' . $this->entityTypeId
       ],
       'source' => [
         'ids' => [
@@ -97,9 +76,6 @@ class MigrationImportAutoSiteInternetEntity extends MigrationImportAutoBase {
   protected function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
-    // Set type
-    $data_rows[$k]['type'] = $row['relationships']['site_internet_entity_type']['data']['meta']["drupal_internal__target_id"];
-    $this->bundle = $data_rows[$k]['type'];
     // Get relationships datas
     foreach ($row['relationships'] as $fieldName => $value) {
       if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
@@ -150,16 +126,12 @@ class MigrationImportAutoSiteInternetEntity extends MigrationImportAutoBase {
   }
 
   protected function addToLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
 
   protected function addDebugLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
 
