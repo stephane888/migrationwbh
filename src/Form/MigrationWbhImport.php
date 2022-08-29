@@ -7,7 +7,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrationwbh\Services\MigrationImport;
+use Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity;
 use Drupal\Core\Render\Renderer;
+use Stephane888\Debug\debugLog;
 
 /**
  * Configure migrationwbh settings for this site.
@@ -31,6 +33,11 @@ class MigrationWbhImport extends ConfigFormBase {
    * @var integer
    */
   protected $maxStep = 3;
+  /**
+   *
+   * @deprecated
+   * @var array
+   */
   protected static $pluginIds = [
     'wbhorizon_site_internet_entity_architecte' => 'wbhorizon_site_internet_entity_architecte',
     'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity',
@@ -40,16 +47,22 @@ class MigrationWbhImport extends ConfigFormBase {
     'wbhorizon_block_content_menu' => 'wbhorizon_block_content_menu',
     'wbhorizon_block_content_bp' => 'wbhorizon_block_content_bp'
   ];
+  /**
+   *
+   * @var MigrationImportAutoSiteInternetEntity
+   */
+  protected $MigrationImportAutoSiteInternetEntity;
 
   /**
    *
    * @param ConfigFactoryInterface $config_factory
    * @param MigrationImport $MigrationImport
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer) {
+  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity) {
     parent::__construct($config_factory);
     $this->MigrationImport = $MigrationImport;
     $this->Renderer = $Renderer;
+    $this->MigrationImportAutoSiteInternetEntity = $MigrationImportAutoSiteInternetEntity;
   }
 
   /**
@@ -57,7 +70,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'));
+    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'));
   }
 
   /**
@@ -252,6 +265,7 @@ class MigrationWbhImport extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
+    // reconstruction du theme.
   }
 
   /**
@@ -290,12 +304,25 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param FormStateInterface $form_state
    */
   public function ImportNextSubmit(array &$form, FormStateInterface $form_state) {
+    $config = $this->config(static::$keySettings)->getRawData();
     $nextStep = $form_state->get('step') + 1;
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
-    $this->MigrationImport->listMigrate(static::$pluginIds);
-    $this->MigrationImport->runImport();
+    // Import des pages web.
+    $urlPageWeb = trim($config['external_domain'], '/jsonapi/export/page-web');
+    $this->MigrationImportAutoSiteInternetEntity->setUrl($urlPageWeb);
+    $this->MigrationImportAutoSiteInternetEntity->runImport();
+    debugLog::$max_depth = 15;
+    debugLog::kintDebugDrupal($this->MigrationImportAutoSiteInternetEntity->getLogs(), 'ImportNextSubmit__SiteInternetEntity', true);
+    // Import des block_contents.
+    // ***
+    // Import du theme.
+    // ***
+    // Import des blocks.
+    // ***
+    // Import des nodes.
+    // ***
     $form_state->setRebuild();
   }
 

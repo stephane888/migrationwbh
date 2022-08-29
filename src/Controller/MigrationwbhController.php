@@ -30,6 +30,18 @@ class MigrationwbhController extends ControllerBase {
    * Builds the response.
    */
   public function build() {
+    $this->MigrationAutoImport->testSiteInternetEntityImport('http://test62.wb-horizon.kksa/jsonapi/export/page-web');
+    $build['content'] = [
+      '#theme' => 'migrationwbh_debug_migrate',
+      '#content' => $this->t(' It works! ')
+    ];
+    return $build;
+  }
+
+  /**
+   * Builds the response.
+   */
+  public function buildOld() {
     $datas = $this->MigrationAutoImport->testNodeImport('http://test62.wb-horizon.kksa/jsonapi/node/realisations_entreprise_generale');
     $build['content'] = [
       '#theme' => 'migrationwbh_debug_migrate',

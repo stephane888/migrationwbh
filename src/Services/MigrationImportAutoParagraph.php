@@ -12,7 +12,6 @@ use Drupal\file\Entity\File;
 use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\DebugCode;
-use PhpParser\Node\Stmt\Static_;
 
 class MigrationImportAutoParagraph extends MigrationImportAutoBase {
   protected $fieldData;
@@ -59,7 +58,7 @@ class MigrationImportAutoParagraph extends MigrationImportAutoBase {
   }
 
   public function runImport() {
-    if (!$this->fieldData)
+    if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
     /**

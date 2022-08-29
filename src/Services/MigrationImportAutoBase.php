@@ -55,6 +55,7 @@ class MigrationImportAutoBase {
    * @var array
    */
   protected static $logs = [];
+  protected static $configImport;
 
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
@@ -149,9 +150,10 @@ class MigrationImportAutoBase {
   }
 
   /**
-   * Permet de recuper les données à partir de l'url;
+   * Permet de recuperer les données à partir de l'url;
    */
   protected function retrieveDatas() {
+    $this->getConfigImport();
     if (!empty($this->fieldData))
       $url = $this->fieldData['links']['related']['href'];
     else
@@ -160,6 +162,11 @@ class MigrationImportAutoBase {
       'data_fetcher_plugin' => 'http',
       'urls' => [
         $url
+      ],
+      'authentication' => [
+        'plugin' => 'basic',
+        'username' => static::$configImport['username'],
+        'password' => static::$configImport['password']
       ]
     ];
 
@@ -239,6 +246,12 @@ class MigrationImportAutoBase {
         'errors' => UtilityError::errorAll($e, 7)
       ];
       $this->addToLogs($dbg, $fieldName);
+    }
+  }
+
+  protected function getConfigImport() {
+    if (!static::$configImport) {
+      static::$configImport = \Drupal::config('migrationwbh.import')->getRawData();
     }
   }
 

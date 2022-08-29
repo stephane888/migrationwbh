@@ -60,7 +60,7 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
   }
 
   public function runImport() {
-    if (!$this->fieldData)
+    if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
     /**
@@ -144,6 +144,20 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
       ];
       throw DebugCode::exception('validationDatas', $dbg);
     }
+  }
+
+  protected function addToLogs($data, $key = null) {
+    if ($this->entityTypeId && $this->bundle)
+      static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
+    elseif ($this->entityTypeId)
+      static::$logs[$this->entityTypeId][$key][] = $data;
+  }
+
+  protected function addDebugLogs($data, $key = null) {
+    if ($this->entityTypeId && $this->bundle)
+      static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
+    elseif ($this->entityTypeId)
+      static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
 
 }

@@ -62,7 +62,7 @@ class MigrationImportAutoTaxoTerm extends MigrationImportAutoBase {
   }
 
   public function runImport() {
-    if (!$this->fieldData)
+    if (!$this->fieldData && !$this->url)
       throw DebugCode::exception(' Vous devez definir fieldData ', $this->fieldData);
     $this->retrieveDatas();
     /**

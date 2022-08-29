@@ -12,3 +12,7 @@ services:
   migrationwbh.migrate_auto_import:
     class: Drupal\migrationwbh\Services\MigrationAutoImport
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser']
+    
+  migrationwbh.migrate_auto_import.site_internet_entity:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','site_internet_entity','']

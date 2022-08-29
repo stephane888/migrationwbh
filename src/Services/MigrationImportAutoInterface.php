@@ -9,7 +9,7 @@ use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
 
-class MigrationImportAutoBase {
+class MigrationImportAutoInterface {
   private $SkypRunMigrate = false;
   private $configuration;
   /**

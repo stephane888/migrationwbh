@@ -4,11 +4,6 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
-use Drupal\migrate\MigrateExecutable;
-use Drupal\migrate\MigrateMessage;
-use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\Core\File\FileSystemInterface;
-use Drupal\file\Entity\File;
 use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 
@@ -80,7 +75,7 @@ class MigrationAutoImport {
       throw new \ErrorException(' Vous devez definir fieldData ');
     if (!empty($this->fieldData['data']) && empty($this->fieldData['data'][0]))
       $this->fieldData['data'][0] = $this->fieldData['data'];
-    // file type on data
+    // File type on data
     if (!empty($this->fieldData['data'][0])) {
       $row = $this->fieldData['data'][0];
       $type = explode("--", $row['type']);
@@ -140,7 +135,34 @@ class MigrationAutoImport {
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getRawDatas();
           return $results;
         }
+        elseif ($this->entityTypeId == 'menu_link_content') {
+          $MigrationImportAutoMenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoMenuLinkContent->setData($this->fieldData);
+          $MigrationImportAutoMenuLinkContent->setRollback($this->rollback);
+          $results = $MigrationImportAutoMenuLinkContent->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoMenuLinkContent->getLogs(),
+            'errors' => $MigrationImportAutoMenuLinkContent->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoMenuLinkContent->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoMenuLinkContent->getRawDatas();
+          return $results;
+        }
+        elseif ($this->entityTypeId == 'site_internet_entity') {
+          $MigrationImportAutoSiteInternetEntity = new MigrationImportAutoSiteInternetEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoSiteInternetEntity->setData($this->fieldData);
+          $MigrationImportAutoSiteInternetEntity->setRollback($this->rollback);
+          $results = $MigrationImportAutoSiteInternetEntity->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoSiteInternetEntity->getLogs(),
+            'errors' => $MigrationImportAutoSiteInternetEntity->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoSiteInternetEntity->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoSiteInternetEntity->getRawDatas();
+          return $results;
+        }
       }
+      // Ceci inclut egalements les configurations.
       else {
         switch ($this->entityTypeId) {
           case 'file':
@@ -159,8 +181,16 @@ class MigrationAutoImport {
             static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoMenu->getLogs();
             return $results;
             break;
+          case 'block':
+            $MigrationImportAutoBlock = new MigrationImportAutoBlock($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoBlock->setData($this->fieldData);
+            $MigrationImportAutoBlock->setRollback($this->rollback);
+            $results = $MigrationImportAutoBlock->runImport();
+            static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoBlock->getLogs();
+            return $results;
+            break;
           default:
-            ;
+            //
             break;
         }
       }
@@ -179,6 +209,12 @@ class MigrationAutoImport {
     return $this->entityTypeId;
   }
 
+  /**
+   * Utiliser pour model.
+   *
+   * @param string $url
+   * @return NULL[]|array[][]|NULL[][]|boolean[][]
+   */
   function testNodeImport($url) {
     $this->entityTypeId = 'node';
     $MigrationImportAutoNode = new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
@@ -200,6 +236,37 @@ class MigrationAutoImport {
     debugLog::$max_depth = 15;
     debugLog::kintDebugDrupal($MigrationImportAutoNode->getLogs(), 'testNodeImport', true);
     return $re;
+  }
+
+  /**
+   * Utiliser pour model.
+   *
+   * @param string $url
+   * @return NULL[]|array[][]|NULL[][]|boolean[][]
+   */
+  function testSiteInternetEntityImport($url) {
+    $this->entityTypeId = 'site_internet_entity';
+    $MigrationImport = new MigrationImportAutoSiteInternetEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+    $MigrationImport->setUrl($url);
+    // $MigrationImportAutoNode->setRollback(true);
+    // $MigrationImportAutoNode->setImport(false);
+    $re = [
+      'resul' => $MigrationImport->runImport(),
+      'conf' => [
+        $MigrationImport->getConfiguration(),
+        'subConf' => static::$subConf
+      ],
+      'rawDatas' => [
+        $MigrationImport->getRawDatas(),
+        'SubRawDatas' => static::$SubRawDatas
+      ],
+      'error' => $MigrationImport->getLogs()
+    ];
+    debugLog::$max_depth = 15;
+    debugLog::kintDebugDrupal($MigrationImport->getLogs(), 'testSiteInternetEntityImport', true);
+    return [
+      $re
+    ];
   }
 
 }

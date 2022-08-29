@@ -37,26 +37,24 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
    * @var array
    */
   private $unMappingFields = [
-    "drupal_internal__revision_id",
-    'created',
-    'content_translation_changed'
+    "locked"
   ];
   private $unGetRelationships = [
     "paragraph_type"
   ];
   private $SkypRunMigrate = false;
 
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
-    $this->bundle = $bundle;
   }
 
   public function runImport() {
-    if (!$this->fieldData)
+    if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
+    $this->getConfigImport();
     /**
      * --
      *
@@ -64,13 +62,12 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
      */
     $configuration = [
       'destination' => [
-        'plugin' => 'entity:' . $this->entityTypeId,
-        'default_bundle' => $this->bundle
+        'plugin' => 'entity:' . $this->entityTypeId
       ],
       'source' => [
         'ids' => [
           'drupal_internal__id' => [
-            'type' => 'integer'
+            'type' => 'string'
           ]
         ],
         'plugin' => 'embedded_data',
@@ -78,7 +75,17 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-    return $this->loopDatas($configuration);
+    $results = $this->loopDatas($configuration);
+    // Charger les menu_link_content.
+    $entityTypeId = 'menu_link_content';
+    foreach ($results as $id => $value) {
+      // http://test62.wb-horizon.kksa/jsonapi/menu_link_content/test62_wb_horizon_kksa_main
+      $MigrationImportAutoMenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $entityTypeId, $id);
+      $url = trim(static::$configImport['external_domain'], '/') . '/jsonapi/menu_link_content/' . $id;
+      $MigrationImportAutoMenuLinkContent->setUrl($url);
+      $MigrationImportAutoMenuLinkContent->runImport();
+    }
+    return $results;
   }
 
   /**
@@ -89,9 +96,6 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
   protected function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
-    // Set type
-    $data_rows[$k]['type'] = $row['relationships']['paragraph_type']['data']['meta']["drupal_internal__target_id"];
-    $this->bundle = $data_rows[$k]['type'];
   }
 
   /**
