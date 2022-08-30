@@ -11,8 +11,11 @@ use Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity;
 use Drupal\migrationwbh\Services\MigrationImportAutoBlockContent;
 use Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity;
 use Drupal\migrationwbh\Services\MigrationImportAutoBlock;
+use Drupal\layoutgenentitystyles\Services\LayoutgenentitystylesServices;
 use Drupal\Core\Render\Renderer;
 use Stephane888\Debug\debugLog;
+use Drupal\generate_style_theme\Services\GenerateStyleTheme;
+use Drupal\Core\Url;
 
 /**
  * Configure migrationwbh settings for this site.
@@ -76,10 +79,16 @@ class MigrationWbhImport extends ConfigFormBase {
 
   /**
    *
+   * @var LayoutgenentitystylesServices
+   */
+  protected $LayoutgenentitystylesServices;
+
+  /**
+   *
    * @param ConfigFactoryInterface $config_factory
    * @param MigrationImport $MigrationImport
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity, MigrationImportAutoBlockContent $MigrationImportAutoBlockContent, MigrationImportAutoConfigThemeEntity $MigrationImportAutoConfigThemeEntity, MigrationImportAutoBlock $MigrationImportAutoBlock) {
+  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity, MigrationImportAutoBlockContent $MigrationImportAutoBlockContent, MigrationImportAutoConfigThemeEntity $MigrationImportAutoConfigThemeEntity, MigrationImportAutoBlock $MigrationImportAutoBlock, LayoutgenentitystylesServices $LayoutgenentitystylesServices) {
     parent::__construct($config_factory);
     $this->MigrationImport = $MigrationImport;
     $this->Renderer = $Renderer;
@@ -87,6 +96,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->MigrationImportAutoBlockContent = $MigrationImportAutoBlockContent;
     $this->MigrationImportAutoConfigThemeEntity = $MigrationImportAutoConfigThemeEntity;
     $this->MigrationImportAutoBlock = $MigrationImportAutoBlock;
+    $this->LayoutgenentitystylesServices = $LayoutgenentitystylesServices;
   }
 
   /**
@@ -94,7 +104,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'));
+    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'), $container->get('layoutgenentitystyles.add.style.theme'));
   }
 
   /**
@@ -103,8 +113,9 @@ class MigrationWbhImport extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config(static::$keySettings)->getRawData();
-    if ($form_state->has('step')) {
-      switch ($form_state->get('step')) {
+    // if ($form_state->has('step')) {
+    if (!empty($_GET['step'])) {
+      switch ($_GET['step']) {
         case 1:
           $this->formState1($form, $form_state, $config);
           break;
@@ -177,7 +188,8 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param FormStateInterface $form_state
    */
   protected function actionButtons(array &$form, FormStateInterface $form_state, $title_next = "Suivant", $submit_next = 'selectNextFieldSubmit', $title_preview = "Precedent") {
-    if ($form_state->get('step') > 1)
+    $Step = !empty($_GET['step']) ? $_GET['step'] : 1;
+    if ($Step > 1)
       $form['preview'] = [
         '#type' => 'submit',
         '#value' => $title_preview,
@@ -189,7 +201,7 @@ class MigrationWbhImport extends ConfigFormBase {
           ]
         ]
       ];
-    if ($form_state->get('step') < $this->maxStep)
+    if ($Step < $this->maxStep)
       $form['next'] = [
         '#type' => 'submit',
         '#value' => $title_next,
@@ -201,7 +213,7 @@ class MigrationWbhImport extends ConfigFormBase {
           ]
         ]
       ];
-    if ($form_state->get('step') >= $this->maxStep) {
+    if ($Step >= $this->maxStep) {
       $form = parent::buildForm($form, $form_state);
       if (!empty($form['actions']['submit'])) {
         $form['actions']['submit']['#value'] = 'Terminer le processus';
@@ -288,8 +300,42 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Generer les fichiers du themes.
+    $this->LayoutgenentitystylesServices->generateAllFilesStyles();
+    $defaultThemeName = \Drupal::config('system.theme')->get('default');
+    // dump($defaultThemeName);
+    if ($defaultThemeName) {
+      $config_theme_entity = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
+        'hostname' => $defaultThemeName
+      ]);
+    }
+    //
+    if (!empty($config_theme_entity)) {
+      $config_theme_entity = reset($config_theme_entity);
+      $GenerateStyleTheme = new GenerateStyleTheme($config_theme_entity);
+      $GenerateStyleTheme->buildSubTheme(false, true);
+    }
+
+    // Generer un domaine.
+    /**
+     * $domains
+     */
+    $domains = \Drupal::entityTypeManager()->getStorage('domain')->loadMultiple();
+    if (empty($domains)) {
+      $values = [
+        'hostname' => $_SERVER['HTTP_HOST'],
+        'name' => $_SERVER['HTTP_HOST'],
+        'id' => preg_replace('/[^a-z0-9]/', "_", $_SERVER['HTTP_HOST']),
+        'is_default' => true
+      ];
+      $domain = \Drupal::entityTypeManager()->getStorage('domain')->create($values);
+      $domain->save();
+    }
     parent::submitForm($form, $form_state);
-    // reconstruction du theme.
+    $this->messenger()->addMessage('Theme regenerer avec succes');
+    // $response = Url::fromUserInput('internal:/node');
+    // $form_state->setRedirect($response);
+    $form_state->setRedirect('<front>');
   }
 
   /**
@@ -298,7 +344,8 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param FormStateInterface $form_state
    */
   public function selectNextFieldSubmit(array &$form, FormStateInterface $form_state) {
-    $nextStep = $form_state->get('step') + 1;
+    // $nextStep = $form_state->get('step') + 1;
+    $nextStep = !empty($_GET['step']) ? $_GET['step'] + 1 : 2;
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
@@ -306,7 +353,8 @@ class MigrationWbhImport extends ConfigFormBase {
   }
 
   public function saveConfigNext(array &$form, FormStateInterface $form_state) {
-    $nextStep = $form_state->get('step') + 1;
+    // $nextStep = $form_state->get('step') + 1;
+    $nextStep = !empty($_GET['step']) ? $_GET['step'] + 1 : 2;
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
@@ -318,7 +366,12 @@ class MigrationWbhImport extends ConfigFormBase {
       $config->set('password', $form_state->getValue('password'));
     $config->save();
     //
-    $form_state->setRebuild();
+    $form_state->setRedirect('migrationwbh.runimportform', [], [
+      'query' => [
+        'step' => $nextStep
+      ]
+    ]);
+    // $form_state->setRebuild();
   }
 
   /**
@@ -329,7 +382,8 @@ class MigrationWbhImport extends ConfigFormBase {
    */
   public function ImportNextSubmit(array &$form, FormStateInterface $form_state) {
     $config = $this->config(static::$keySettings)->getRawData();
-    $nextStep = $form_state->get('step') + 1;
+    // $nextStep = $form_state->get('step') + 1;
+    $nextStep = !empty($_GET['step']) ? $_GET['step'] + 1 : 1;
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
@@ -359,15 +413,25 @@ class MigrationWbhImport extends ConfigFormBase {
     debugLog::kintDebugDrupal($this->MigrationImportAutoBlock->getLogs(), 'ImportNextSubmit__Block', true);
     // Import des nodes.
     // ***
-    $form_state->setRebuild();
+    $form_state->setRedirect('migrationwbh.runimportform', [], [
+      'query' => [
+        'step' => $nextStep
+      ]
+    ]);
+    // $form_state->setRebuild();
   }
 
   public function selectPreviewsFieldSubmit(array &$form, FormStateInterface $form_state) {
-    $pvStep = $form_state->get('step') - 1;
+    $pvStep = !empty($_GET['step']) ? $_GET['step'] - 1 : 0;
     if ($pvStep <= 0)
       $pvStep = 1;
     $form_state->set('step', $pvStep);
-    $form_state->setRebuild();
+    // $form_state->setRebuild();
+    $form_state->setRedirect('migrationwbh.runimportform', [], [
+      'query' => [
+        'step' => $pvStep
+      ]
+    ]);
   }
 
 }

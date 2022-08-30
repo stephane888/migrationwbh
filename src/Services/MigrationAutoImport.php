@@ -71,6 +71,7 @@ class MigrationAutoImport {
    * Le constructeur determine et initialise la class chargé de migrer l'entité.
    */
   public function runImport() {
+
     if (!$this->fieldData)
       throw new \ErrorException(' Vous devez definir fieldData ');
     if (!empty($this->fieldData['data']) && empty($this->fieldData['data'][0]))

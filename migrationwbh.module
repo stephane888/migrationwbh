@@ -30,3 +30,4 @@ function migrationwbh_theme($existing, $type, $theme, $path) {
     ]
   ];
 }
+
