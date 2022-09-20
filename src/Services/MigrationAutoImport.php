@@ -71,7 +71,6 @@ class MigrationAutoImport {
    * Le constructeur determine et initialise la class chargé de migrer l'entité.
    */
   public function runImport() {
-
     if (!$this->fieldData)
       throw new \ErrorException(' Vous devez definir fieldData ');
     if (!empty($this->fieldData['data']) && empty($this->fieldData['data'][0]))
@@ -162,6 +161,45 @@ class MigrationAutoImport {
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoSiteInternetEntity->getRawDatas();
           return $results;
         }
+        elseif ($this->entityTypeId == 'commerce_product') {
+          $MigrationImportAutoCommerceProduct = new MigrationImportAutoCommerceProduct($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoCommerceProduct->setData($this->fieldData);
+          $MigrationImportAutoCommerceProduct->setRollback($this->rollback);
+          $results = $MigrationImportAutoCommerceProduct->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoCommerceProduct->getLogs(),
+            'errors' => $MigrationImportAutoCommerceProduct->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoCommerceProduct->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoCommerceProduct->getRawDatas();
+          return $results;
+        }
+        elseif ($this->entityTypeId == 'commerce_product_variation') {
+          $MigrationImportAutoCommerceProductVariation = new MigrationImportAutoCommerceProductVariation($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoCommerceProductVariation->setData($this->fieldData);
+          $MigrationImportAutoCommerceProductVariation->setRollback($this->rollback);
+          $results = $MigrationImportAutoCommerceProductVariation->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoCommerceProductVariation->getLogs(),
+            'errors' => $MigrationImportAutoCommerceProductVariation->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoCommerceProductVariation->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoCommerceProductVariation->getRawDatas();
+          return $results;
+        }
+        elseif ($this->entityTypeId == 'commerce_store') {
+          $MigrationImportAutoCommerceStore = new MigrationImportAutoCommerceStore($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoCommerceStore->setData($this->fieldData);
+          $MigrationImportAutoCommerceStore->setRollback($this->rollback);
+          $results = $MigrationImportAutoCommerceStore->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoCommerceStore->getLogs(),
+            'errors' => $MigrationImportAutoCommerceStore->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoCommerceStore->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoCommerceStore->getRawDatas();
+          return $results;
+        }
       }
       // Ceci inclut egalements les configurations.
       else {
@@ -188,6 +226,13 @@ class MigrationAutoImport {
             $MigrationImportAutoBlock->setRollback($this->rollback);
             $results = $MigrationImportAutoBlock->runImport();
             static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoBlock->getLogs();
+            return $results;
+          case 'commerce_currency':
+            $MigrationImportAutoCommerceCurrency = new MigrationImportAutoCommerceCurrency($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoCommerceCurrency->setData($this->fieldData);
+            $MigrationImportAutoCommerceCurrency->setRollback($this->rollback);
+            $results = $MigrationImportAutoCommerceCurrency->runImport();
+            static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoCommerceCurrency->getLogs();
             return $results;
           case 'config_theme_entity':
             $MigrationImportAutoConfigThemeEntity = new MigrationImportAutoConfigThemeEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
