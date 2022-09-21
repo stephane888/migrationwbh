@@ -169,6 +169,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // if (!empty($form['actions']['submit'])) {
     // $form['actions']['submit']['#value'] = 'save config';
     // }
+    $this->disableUseDomainConfig();
     $this->actionButtons($form, $form_state, "Importer et passer à l'etape suivante", 'ImportNextSubmit');
   }
 
@@ -178,6 +179,10 @@ class MigrationWbhImport extends ConfigFormBase {
       '#tag' => 'h2',
       '#value' => 'Regenerer votre theme'
     ];
+
+    $this->createDomain();
+    $this->createNewTheme();
+
     //
     $this->actionButtons($form, $form_state);
   }
@@ -303,7 +308,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // Generer les fichiers du themes.
     $this->LayoutgenentitystylesServices->generateAllFilesStyles();
     $defaultThemeName = \Drupal::config('system.theme')->get('default');
-    // dump($defaultThemeName);
+
     if ($defaultThemeName) {
       $config_theme_entity = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
         'hostname' => $defaultThemeName
@@ -316,21 +321,6 @@ class MigrationWbhImport extends ConfigFormBase {
       $GenerateStyleTheme->buildSubTheme(false, true);
     }
 
-    // Generer un domaine.
-    /**
-     * $domains
-     */
-    $domains = \Drupal::entityTypeManager()->getStorage('domain')->loadMultiple();
-    if (empty($domains)) {
-      $values = [
-        'hostname' => $_SERVER['HTTP_HOST'],
-        'name' => $_SERVER['HTTP_HOST'],
-        'id' => preg_replace('/[^a-z0-9]/', "_", $_SERVER['HTTP_HOST']),
-        'is_default' => true
-      ];
-      $domain = \Drupal::entityTypeManager()->getStorage('domain')->create($values);
-      $domain->save();
-    }
     parent::submitForm($form, $form_state);
     $this->messenger()->addMessage('Theme regenerer avec succes');
     // $response = Url::fromUserInput('internal:/node');
@@ -432,6 +422,82 @@ class MigrationWbhImport extends ConfigFormBase {
         'step' => $pvStep
       ]
     ]);
+  }
+
+  /**
+   * On doit desactiver l'utilisation du domaine pour la configuration des
+   * themes.
+   */
+  protected function disableUseDomainConfig() {
+    $key = "generate_style_theme.settings";
+    $config = \Drupal::config($key)->getRawData();
+    if (!empty($config['tab1']['use_domain'])) {
+      $configEit = \Drupal::service('config.factory')->getEditable($key);
+      $configEit->set('tab1.use_domain', 0);
+      $configEit->save();
+    }
+  }
+
+  /**
+   * Permet de creer un domaine si aucun n'existe.
+   */
+  protected function createDomain() {
+    $domains = \Drupal::entityTypeManager()->getStorage('domain')->loadMultiple();
+    if (empty($domains)) {
+      $values = [
+        'hostname' => $_SERVER['HTTP_HOST'],
+        'name' => $_SERVER['HTTP_HOST'],
+        'id' => preg_replace('/[^a-z0-9]/', "_", $_SERVER['HTTP_HOST']),
+        'is_default' => true
+      ];
+      $domain = \Drupal::entityTypeManager()->getStorage('domain')->create($values);
+      $domain->save();
+    }
+  }
+
+  /**
+   * Permet de creer/maj un theme en function du nouveau domaine et des
+   * informations de configuration de l'ancien domaine.
+   */
+  protected function createNewTheme() {
+    $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadMultiple();
+    // comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
+    if (!empty($config_theme_entities)) {
+      $old_config_theme_entities = null;
+      foreach ($config_theme_entities as $config_theme_entity) {
+        /**
+         *
+         * @var \Drupal\generate_style_theme\Entity\ConfigThemeEntity $config_theme_entity
+         */
+        if (str_contains($config_theme_entity->getHostname(), '_wb_horizon_')) {
+          $old_config_theme_entities = $config_theme_entity;
+          // dump($config_theme_entity);
+        }
+      }
+      // On charge le theme.
+      $id = preg_replace('/[^a-z0-9]/', "_", $_SERVER['HTTP_HOST']);
+      $domain = \Drupal::entityTypeManager()->getStorage('domain')->load($id);
+      if ($domain && $old_config_theme_entities) {
+        // si le nouveau theme n'existe pas on le cree :
+        $newTHemeExit = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
+          'hostname' => $id
+        ]);
+        if (empty($newTHemeExit)) {
+          $domain = $domain->toArray();
+          $newTheme = $old_config_theme_entities->createDuplicate();
+          $newTheme->set('hostname', $id);
+          $newTheme->save();
+          // dump($newTheme->toArray());
+        }
+        else {
+          $newTheme = reset($newTHemeExit);
+          $newTheme->save();
+        }
+      }
+      else {
+        throw new \Exception(" Une erreur s'est produite ...");
+      }
+    }
   }
 
 }
