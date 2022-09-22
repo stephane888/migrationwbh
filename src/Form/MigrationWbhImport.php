@@ -157,6 +157,7 @@ class MigrationWbhImport extends ConfigFormBase {
       '#default_value' => $config['external_domain'],
       '#description' => 'Votre domaine au format complet: example => http://mark-business.wh-hozizon.com '
     ];
+    $this->addLanguage();
     //
     $this->actionButtons($form, $form_state, "Suivant", "saveConfigNext");
   }
@@ -510,6 +511,11 @@ class MigrationWbhImport extends ConfigFormBase {
         $this->messenger()->addStatus("Le theme a été MAJ ");
       }
     }
+  }
+
+  protected function addLanguage() {
+    $language = \Drupal\language\Entity\ConfigurableLanguage::createFromLangcode('en');
+    $language->save();
   }
 
   /**
