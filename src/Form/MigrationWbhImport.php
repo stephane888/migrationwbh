@@ -514,8 +514,11 @@ class MigrationWbhImport extends ConfigFormBase {
   }
 
   protected function addLanguage() {
-    $language = \Drupal\language\Entity\ConfigurableLanguage::createFromLangcode('en');
-    $language->save();
+    $en = \Drupal\language\Entity\ConfigurableLanguage::load('en');
+    if (empty($en)) {
+      $language = \Drupal\language\Entity\ConfigurableLanguage::createFromLangcode('en');
+      $language->save();
+    }
   }
 
   /**
