@@ -48,7 +48,7 @@ class MigrationWbhImport extends ConfigFormBase {
     'wbhorizon_site_internet_entity_architecte' => 'wbhorizon_site_internet_entity_architecte',
     'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity',
     'wbhorizon_block_content_f_h' => 'wbhorizon_block_content_f_h',
-    'wbhorizon_menu_link_content' => 'wbhorizon_menu_link_content',
+    // 'wbhorizon_menu_link_content' => 'wbhorizon_menu_link_content',
     'wbhorizon_block' => 'wbhorizon_block',
     'wbhorizon_block_content_menu' => 'wbhorizon_block_content_menu',
     'wbhorizon_block_content_bp' => 'wbhorizon_block_content_bp'
