@@ -194,7 +194,8 @@ class MigrationWbhImport extends ConfigFormBase {
       '#tag' => 'h2',
       '#value' => 'Regenerer votre theme'
     ];
-    //
+    $this->disabledPreprocessCss();
+    $this->disabledBlocks();
     $this->actionButtons($form, $form_state);
   }
 
@@ -519,6 +520,60 @@ class MigrationWbhImport extends ConfigFormBase {
       $language = \Drupal\language\Entity\ConfigurableLanguage::createFromLangcode('en');
       $language->save();
     }
+  }
+
+  protected function disabledPreprocessCss() {
+    $key = "system.performance";
+    $conf = \Drupal::config($key)->getRawData();
+    if ($conf['css']['preprocess']) {
+      $configEit = \Drupal::service('config.factory')->getEditable($key);
+      $configEit->set('css.preprocess', false);
+      $configEit->set('js.preprocess', false);
+      $configEit->save();
+    }
+  }
+
+  /**
+   * On desactive certains blocs
+   */
+  protected function disabledBlocks() {
+    $config_theme_entity = $this->getOldTheme();
+    if ($config_theme_entity) {
+      $themeName = $config_theme_entity->getHostname();
+      //
+      $block = \Drupal::entityTypeManager()->getStorage('block')->load($themeName . '_page_title');
+      if ($block) {
+        $block->set('status', false);
+        $block->save();
+      }
+      //
+      $block = \Drupal::entityTypeManager()->getStorage('block')->load($themeName . '_breamcrumb');
+      if ($block) {
+        $block->set('status', false);
+        $block->save();
+      }
+    }
+  }
+
+  /**
+   *
+   * @return void|\Drupal\generate_style_theme\Entity\ConfigThemeEntity
+   */
+  protected function getOldTheme() {
+    $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadMultiple();
+    // comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
+    if (!empty($config_theme_entities)) {
+      foreach ($config_theme_entities as $config_theme_entity) {
+        /**
+         *
+         * @var \Drupal\generate_style_theme\Entity\ConfigThemeEntity $config_theme_entity
+         */
+        if (str_contains($config_theme_entity->getHostname(), '_wb_horizon_')) {
+          return $config_theme_entity;
+        }
+      }
+    }
+    return;
   }
 
   /**
