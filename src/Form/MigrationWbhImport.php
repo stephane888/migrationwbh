@@ -317,8 +317,8 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Generer les fichiers du themes.
-    $this->LayoutgenentitystylesServices->generateAllFilesStyles();
+    // On ne genere pas les fichiers pour le moment.
+    // $this->LayoutgenentitystylesServices->generateAllFilesStyles();
     $defaultThemeName = \Drupal::config('system.theme')->get('default');
 
     if ($defaultThemeName) {
