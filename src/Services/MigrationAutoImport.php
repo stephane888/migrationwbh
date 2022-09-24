@@ -136,7 +136,7 @@ class MigrationAutoImport {
           return $results;
         }
         //
-        elseif ($this->entityTypeId == 'menu_link_content__') {
+        elseif ($this->entityTypeId == 'menu_link_content') {
           $MigrationImportAutoMenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoMenuLinkContent->setData($this->fieldData);
           $MigrationImportAutoMenuLinkContent->setRollback($this->rollback);
