@@ -319,20 +319,19 @@ class MigrationWbhImport extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // On ne genere pas les fichiers pour le moment.
     // $this->LayoutgenentitystylesServices->generateAllFilesStyles();
-    $defaultThemeName = \Drupal::config('system.theme')->get('default');
-
-    if ($defaultThemeName) {
-      $config_theme_entity = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
-        'hostname' => $defaultThemeName
-      ]);
-    }
-    //
-    if (!empty($config_theme_entity)) {
-      $config_theme_entity = reset($config_theme_entity);
-      $GenerateStyleTheme = new GenerateStyleTheme($config_theme_entity);
-      $GenerateStyleTheme->buildSubTheme(false, true);
-    }
-
+    // $defaultThemeName = \Drupal::config('system.theme')->get('default');
+    // if ($defaultThemeName) {
+    // $config_theme_entity =
+    // \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
+    // 'hostname' => $defaultThemeName
+    // ]);
+    // }
+    // //
+    // if (!empty($config_theme_entity)) {
+    // $config_theme_entity = reset($config_theme_entity);
+    // $GenerateStyleTheme = new GenerateStyleTheme($config_theme_entity);
+    // $GenerateStyleTheme->buildSubTheme(false, true);
+    // }
     parent::submitForm($form, $form_state);
     $this->messenger()->addMessage('Theme regenerer avec succes');
     // $response = Url::fromUserInput('internal:/node');
