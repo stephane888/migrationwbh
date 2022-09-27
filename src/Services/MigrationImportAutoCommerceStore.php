@@ -19,7 +19,7 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
   protected $bundle = null;
 
   /**
-   * les champs qui serront ignorées dans le mapping.
+   * les champs qui seront ignorées dans le mapping.
    * * Les colonnes avec les dates posent probleme. ( il faudra pouvoir les
    * identifiers et appliqué une conversion ).
    *

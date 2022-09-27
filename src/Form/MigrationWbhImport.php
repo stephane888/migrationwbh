@@ -319,24 +319,33 @@ class MigrationWbhImport extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // On ne genere pas les fichiers pour le moment.
     // $this->LayoutgenentitystylesServices->generateAllFilesStyles();
-    // $defaultThemeName = \Drupal::config('system.theme')->get('default');
-    // if ($defaultThemeName) {
-    // $config_theme_entity =
-    // \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
-    // 'hostname' => $defaultThemeName
-    // ]);
-    // }
-    // //
-    // if (!empty($config_theme_entity)) {
-    // $config_theme_entity = reset($config_theme_entity);
-    // $GenerateStyleTheme = new GenerateStyleTheme($config_theme_entity);
-    // $GenerateStyleTheme->buildSubTheme(false, true);
-    // }
+    $this->rebuildTheme();
     parent::submitForm($form, $form_state);
     $this->messenger()->addMessage('Theme regenerer avec succes');
     // $response = Url::fromUserInput('internal:/node');
     // $form_state->setRedirect($response);
     $form_state->setRedirect('<front>');
+  }
+
+  /**
+   * Cette function permet d'appliquer les paramettres du themes, notament le
+   * logo.
+   */
+  protected function rebuildTheme() {
+    $defaultThemeName = \Drupal::config('system.theme')->get('default');
+    if ($defaultThemeName) {
+      $config_theme_entity = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
+        'hostname' => $defaultThemeName
+      ]);
+    }
+    //
+    if (!empty($config_theme_entity)) {
+      $config_theme_entity = reset($config_theme_entity);
+      $config_theme_entity->set('run_npm', false);
+      $config_theme_entity->save();
+      // $GenerateStyleTheme = new GenerateStyleTheme($config_theme_entity);
+      // $GenerateStyleTheme->buildSubTheme(false, false);
+    }
   }
 
   /**

@@ -76,14 +76,19 @@ class MigrationImportAutoBase {
     $plugin_id = 'wbhorizon_entites_auto';
     if (!empty($this->entityTypeId))
       $plugin_id = $plugin_id . '_' . $this->entityTypeId;
-    /**
-     *
-     * @var \Drupal\migrate\Plugin\Migration $migrate
-     */
-    $migrate = $this->MigrationPluginManager->createInstance($plugin_id, $configuration);
-    $migrate->getIdMap()->prepareUpdate();
-    $executable = new MigrateExecutable($migrate, new MigrateMessage());
+
     try {
+      /**
+       *
+       * @var \Drupal\migrate\Plugin\Migration $migrate
+       */
+      $migrate = $this->MigrationPluginManager->createInstance($plugin_id, $configuration);
+      if (empty($migrate)) {
+        throw DebugCode::exception(" Le plugin n'existe pas : " . $plugin_id, $plugin_id);
+      }
+      $migrate->getIdMap()->prepareUpdate();
+      $executable = new MigrateExecutable($migrate, new MigrateMessage());
+      //
       if ($this->rollback)
         $executable->rollback();
       // Run the migration.
@@ -108,6 +113,18 @@ class MigrationImportAutoBase {
       return false;
     }
     catch (\Exception $e) {
+      $migrate->setStatus(MigrationInterface::STATUS_IDLE);
+      $dbg = [
+        'fieldData' => $this->fieldData,
+        'rawData' => $this->rawDatas,
+        'configuration' => $configuration,
+        'errors' => UtilityError::errorAll($e, 7)
+      ];
+      // $this->debugLog['runMigrate'][] = $dbg;
+      $this->addDebugLogs($dbg, 'runMigrate');
+      return false;
+    }
+    catch (\Error $e) {
       $migrate->setStatus(MigrationInterface::STATUS_IDLE);
       $dbg = [
         'fieldData' => $this->fieldData,
