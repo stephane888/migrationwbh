@@ -12,9 +12,8 @@ use Drupal\file\Entity\File;
 use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\DebugCode;
-use PhpParser\Node\Stmt\Static_;
 
-class MigrationImportAutoBlock extends MigrationImportAutoBase {
+class MigrationImportAutoBlocksContents extends MigrationImportAutoBase {
   protected $fieldData;
   /**
    * Données brute provenant du site distant.
@@ -32,28 +31,39 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
   protected array $rawDatas = [];
   
   /**
+   * disponible pour des entités avec bundles.
+   */
+  protected $bundle = null;
+  
+  /**
    * les champs qui serront ignorées dans le mapping.
    *
    * @var array
    */
   private $unMappingFields = [
-    "visibility"
+    "drupal_internal__revision_id",
+    "revision_created",
+    "revision_log"
   ];
-  private $unGetRelationships = [];
+  private $unGetRelationships = [
+    "blocks_contents_type",
+    "revision_uid",
+    "user_id",
+    "content_translation_uid"
+  ];
   private $SkypRunMigrate = false;
   
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
+    $this->bundle = $bundle;
   }
   
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
-    $this->getConfigImport();
-    
     /**
      * --
      *
@@ -61,12 +71,13 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
      */
     $configuration = [
       'destination' => [
-        'plugin' => 'entity:' . $this->entityTypeId
+        'plugin' => 'entity:' . $this->entityTypeId,
+        'default_bundle' => $this->bundle
       ],
       'source' => [
         'ids' => [
           'drupal_internal__id' => [
-            'type' => 'string'
+            'type' => 'integer'
           ]
         ],
         'plugin' => 'embedded_data',
@@ -74,9 +85,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-    $results = $this->loopDatas($configuration);
-    
-    return $results;
+    return $this->loopDatas($configuration);
   }
   
   /**
@@ -87,13 +96,16 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
   protected function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
-    // On importe le paragraph à partir de son id.
-    if (!empty($row['attributes']["plugin"]) && $row['attributes']["plugin"] == 'entity_block:paragraph') {
-      // On a un soucis pour le moment, c'est qu'on ne sais pas comment accedé à
-      // une entité avec bundle sans le bundle.
-      // objectif etait de pouvoir importer du contenus à partir des
-      // configurations.
-      // ( en attendant, on importer ).
+    // add uuid
+    $data_rows[$k]['uuid'] = $row['id'];
+    // Set type
+    $data_rows[$k]['type'] = $row['relationships']['blocks_contents_type']['data']['meta']["drupal_internal__target_id"];
+    $this->bundle = $data_rows[$k]['type'];
+    // Get relationships datas
+    foreach ($row['relationships'] as $fieldName => $value) {
+      if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
+        continue;
+      $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
   }
   
@@ -139,12 +151,16 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
   }
   
   protected function addToLogs($data, $key = null) {
-    if ($this->entityTypeId)
+    if ($this->entityTypeId && $this->bundle)
+      static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
+    elseif ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
   
   protected function addDebugLogs($data, $key = null) {
-    if ($this->entityTypeId)
+    if ($this->entityTypeId && $this->bundle)
+      static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
+    elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
   

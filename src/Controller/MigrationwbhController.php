@@ -12,7 +12,7 @@ use Drupal\migrationwbh\Services\MigrationAutoImport;
  */
 class MigrationwbhController extends ControllerBase {
   protected $MigrationImport;
-
+  
   /**
    *
    * {@inheritdoc}
@@ -20,12 +20,12 @@ class MigrationwbhController extends ControllerBase {
   public static function create(ContainerInterface $container) {
     return new static($container->get('migrationwbh.migrate_import'), $container->get('migrationwbh.migrate_auto_import'));
   }
-
+  
   function __construct(MigrationImport $MigrationImport, MigrationAutoImport $MigrationAutoImport) {
     $this->MigrationImport = $MigrationImport;
     $this->MigrationAutoImport = $MigrationAutoImport;
   }
-
+  
   /**
    * Builds the response.
    */
@@ -37,7 +37,21 @@ class MigrationwbhController extends ControllerBase {
     ];
     return $build;
   }
-
+  
+  //
+  
+  /**
+   * Builds the response.
+   */
+  public function loadParagrph() {
+    $this->MigrationAutoImport->testParagraphImport('/jsonapi/export/paragraph');
+    $build['content'] = [
+      '#theme' => 'migrationwbh_debug_migrate',
+      '#content' => $this->t(' It works! ')
+    ];
+    return $build;
+  }
+  
   /**
    * Builds the response.
    */
@@ -51,8 +65,8 @@ class MigrationwbhController extends ControllerBase {
       '#raw_data' => $datas['rawDatas'],
       '#error' => $datas['error']
     ];
-
+    $this->getLogger($channel)//
     return $build;
   }
-
+  
 }

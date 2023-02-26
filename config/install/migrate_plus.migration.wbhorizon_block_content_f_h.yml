@@ -59,7 +59,7 @@ source:
   # On definie une constante pour pouvoir stocker les images.    
   constants:
     file_destination: 'public://images/'
-    uri: '/jsonapi/site_internet_entity/architecte?include=layout_paragraphs'
+    uri: '/jsonapi/site_internet_entity/architecte?include=layout_paragraphs' #apparament pas utilisé.
     url: '/jsonapi/export/block_content'
       
       

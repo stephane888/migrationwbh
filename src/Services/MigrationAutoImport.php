@@ -11,7 +11,7 @@ use Stephane888\Debug\debugLog;
  * NB: pour une URL donnée les données sont du meme type.
  *
  * @author stephane
- *
+ *        
  */
 class MigrationAutoImport {
   /**
@@ -22,25 +22,25 @@ class MigrationAutoImport {
    */
   protected $fieldData;
   protected static $configImport;
-
+  
   /**
    *
    * @var \Drupal\migrate\Plugin\MigrationPluginManager
    */
   protected $MigrationPluginManager;
-
+  
   /**
    *
    * @var DataParserPluginManager
    */
   protected $DataParserPluginManager;
-
+  
   /**
    * entityTypeId ( node, block_content ...
    * )
    */
   protected $entityTypeId = null;
-
+  
   /**
    * disponible pour des entités avec bundles.
    */
@@ -49,12 +49,26 @@ class MigrationAutoImport {
   private static $subConf = [];
   private static $SubRawDatas = [];
   public $rollback = false;
-
+  
+  /**
+   * Domaine externe, ( Example : https://hakeuk.wb-horizon.com )
+   *
+   * @var string
+   */
+  protected $externalDomain = null;
+  
+  /**
+   * The logger channel factory service.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   */
+  protected $loggerFactory;
+  
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
   }
-
+  
   /**
    *
    * @param array $data
@@ -66,7 +80,7 @@ class MigrationAutoImport {
     }
     $this->fieldData = $data;
   }
-
+  
   /**
    * Le constructeur determine et initialise la class chargé de migrer l'entité.
    */
@@ -135,6 +149,19 @@ class MigrationAutoImport {
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getRawDatas();
           return $results;
         }
+        elseif ($this->entityTypeId == 'blocks_contents') {
+          $MigrationImportAutoBlocksContents = new MigrationImportAutoBlocksContents($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoBlocksContents->setData($this->fieldData);
+          $MigrationImportAutoBlocksContents->setRollback($this->rollback);
+          $results = $MigrationImportAutoBlocksContents->runImport();
+          static::$debugInfo[$this->entityTypeId][] = [
+            'logs' => $MigrationImportAutoBlocksContents->getLogs(),
+            'errors' => $MigrationImportAutoBlocksContents->getDebugLog()
+          ];
+          static::$subConf[$this->entityTypeId][] = $MigrationImportAutoBlocksContents->getConfiguration();
+          static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoBlocksContents->getRawDatas();
+          return $results;
+        }
         //
         elseif ($this->entityTypeId == 'menu_link_content') {
           $MigrationImportAutoMenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
@@ -201,6 +228,9 @@ class MigrationAutoImport {
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoCommerceStore->getRawDatas();
           return $results;
         }
+        else {
+          $this->getLogger('migrationwbh')->warning(" Le type contentEntity : " . $this->entityTypeId . " n'est pas encore pris en compte. ");
+        }
       }
       // Ceci inclut egalements les configurations.
       else {
@@ -244,7 +274,7 @@ class MigrationAutoImport {
             return $results;
             break;
           default:
-            //
+            $this->getLogger('migrationwbh')->warning(" Le type configEntity : " . $this->entityTypeId . " n'est pas encore pris en compte. ");
             break;
         }
       }
@@ -256,11 +286,11 @@ class MigrationAutoImport {
     }
     return false;
   }
-
+  
   public function getEntityTypeId() {
     return $this->entityTypeId;
   }
-
+  
   /**
    * Utiliser pour model.
    *
@@ -289,7 +319,7 @@ class MigrationAutoImport {
     debugLog::kintDebugDrupal($MigrationImportAutoNode->getLogs(), 'testNodeImport', true);
     return $re;
   }
-
+  
   /**
    * Utiliser pour model.
    *
@@ -320,5 +350,64 @@ class MigrationAutoImport {
       $re
     ];
   }
-
+  
+  /**
+   * Utiliser pour model.
+   *
+   * @param string $url
+   * @return NULL[]|array[][]|NULL[][]|boolean[][]
+   */
+  function testParagraphImport($url) {
+    $this->entityTypeId = 'paragraph';
+    $re = [];
+    if ($this->getExternalDomain()) {
+      $MigrationImport = new MigrationImportAutoParagraph($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+      $MigrationImport->setUrl($this->externalDomain . '/' . trim($url, "/"));
+      // $MigrationImportAutoNode->setRollback(true);
+      // $MigrationImportAutoNode->setImport(false);
+      $re = [
+        'resul' => $MigrationImport->runImport(),
+        'conf' => [
+          $MigrationImport->getConfiguration(),
+          'subConf' => static::$subConf
+        ],
+        'rawDatas' => [
+          $MigrationImport->getRawDatas(),
+          'SubRawDatas' => static::$SubRawDatas
+        ],
+        'error' => $MigrationImport->getLogs()
+      ];
+      debugLog::$max_depth = 15;
+      debugLog::kintDebugDrupal($MigrationImport->getLogs(), 'testParagraphImport', true);
+    }
+    return [
+      $re
+    ];
+  }
+  
+  protected function getExternalDomain() {
+    if (!$this->externalDomain) {
+      $conf = \Drupal::config('migrationwbh.import')->getRawData();
+      if (!empty($conf['external_domain'])) {
+        $this->externalDomain = trim($conf['external_domain'], "/");
+      }
+      else {
+        $this->messenger()->addWarning(' constants.url  not found .');
+      }
+    }
+    return $this->externalDomain;
+  }
+  
+  /**
+   *
+   * @param string $channel
+   * @return \Drupal\Core\Logger\LoggerChannelInterface
+   */
+  protected function getLogger($channel) {
+    if (!$this->loggerFactory) {
+      $this->loggerFactory = \Drupal::service('logger.factory');
+    }
+    return $this->loggerFactory->get($channel);
+  }
+  
 }

@@ -5,6 +5,14 @@ migrationwbh.example:
     _controller: '\Drupal\migrationwbh\Controller\MigrationwbhController::build'
   requirements:
     _permission: 'access content'
+    
+migrationwbh.loadparagraph:
+  path: '/migrationwbh/loadparagraph'
+  defaults:
+    _title: 'Example'
+    _controller: '\Drupal\migrationwbh\Controller\MigrationwbhController::loadParagrph'
+  requirements:
+    _permission: 'access content'
 
 migrationwbh.settings_form:
   path: '/admin/config/system/migrationwbh'

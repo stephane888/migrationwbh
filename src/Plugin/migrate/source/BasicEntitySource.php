@@ -15,8 +15,8 @@ use Drupal\migrate\Plugin\MigrationInterface;
  *   id = "basic_entity_source"
  * )
  */
-final class BasicEntitySource extends Url {
-
+class BasicEntitySource extends Url {
+  
   function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
     $conf = \Drupal::config('migrationwbh.import')->getRawData();
     if (empty($conf)) {
@@ -35,7 +35,7 @@ final class BasicEntitySource extends Url {
       // dump($conf);
     }
     else {
-      $this->messenger()->addWarning(' Constants.url  not found .');
+      $this->messenger()->addWarning(' constants.url  not found .');
       $configuration['urls'] = [
         ''
       ];
@@ -44,11 +44,5 @@ final class BasicEntitySource extends Url {
     // dump($configuration);
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
   }
-
-  public function prepareRow($row) {
-    $status = parent::prepareRow($row);
-    //
-    return $status;
-  }
-
+  
 }
