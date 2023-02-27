@@ -4,7 +4,7 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
-use Stephane888\Debug\DebugCode;
+use Stephane888\Debug\ExceptionDebug as DebugCode;
 
 class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
   protected $fieldData;

@@ -11,7 +11,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity\File;
 use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
-use Stephane888\Debug\DebugCode;
+use Stephane888\Debug\ExceptionDebug as DebugCode;
 
 class MigrationImportAutoTaxoTerm extends MigrationImportAutoBase {
   protected $fieldData;

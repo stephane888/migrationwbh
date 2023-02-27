@@ -65,7 +65,6 @@ class MigrationwbhController extends ControllerBase {
       '#raw_data' => $datas['rawDatas'],
       '#error' => $datas['error']
     ];
-    $this->getLogger($channel)//
     return $build;
   }
   

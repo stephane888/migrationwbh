@@ -6,7 +6,7 @@ use Drupal\migrate\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\Utility as UtilityError;
-use Stephane888\Debug\DebugCode;
+use Stephane888\Debug\ExceptionDebug as DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 class MigrationImportAutoInterface {

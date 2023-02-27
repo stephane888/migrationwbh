@@ -115,7 +115,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'), $container->get('layoutgenentitystyles.add.style.theme'));
+    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'), $container->get('layoutgenentitystyles.add.style.theme'), $container->get('migrationwbh.migrate_auto_import.paragraph'));
   }
   
   /**
@@ -414,25 +414,30 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->MigrationImportAutoSiteInternetEntity->setUrl($urlPageWeb);
     $this->MigrationImportAutoSiteInternetEntity->runImport();
     debugLog::$max_depth = 15;
-    debugLog::kintDebugDrupal($this->MigrationImportAutoSiteInternetEntity->getLogs(), 'ImportNextSubmit__SiteInternetEntity', true);
+    $logs = $this->MigrationImportAutoSiteInternetEntity->getLogs();
+    if ($logs)
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true);
     // Import des block_content.
     $urlBlockContents = trim($config['external_domain'], '/') . '/jsonapi/export/block_content';
     $this->MigrationImportAutoBlockContent->setUrl($urlBlockContents);
     $this->MigrationImportAutoBlockContent->runImport();
-    debugLog::$max_depth = 15;
-    debugLog::kintDebugDrupal($this->MigrationImportAutoBlockContent->getLogs(), 'ImportNextSubmit__BlockContent', true);
+    $logs = $this->MigrationImportAutoBlockContent->getLogs();
+    if ($logs)
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true);
     // Import paragraph.
     $urlParagraph = trim($config['external_domain'], '/') . '/jsonapi/export/paragraph';
     $this->MigrationImportAutoParagraph->setUrl($urlParagraph);
     $this->MigrationImportAutoParagraph->runImport();
-    debugLog::$max_depth = 15;
-    debugLog::kintDebugDrupal($this->MigrationImportAutoParagraph->getLogs(), 'ImportNextSubmit__Paragraph', true);
+    $logs = $this->MigrationImportAutoParagraph->getLogs();
+    if ($logs)
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Paragraph', true);
     // Import du theme.
     $urlConfigThemeEntity = trim($config['external_domain'], '/') . '/jsonapi/export/template-theme';
     $this->MigrationImportAutoConfigThemeEntity->setUrl($urlConfigThemeEntity);
     $this->MigrationImportAutoConfigThemeEntity->runImport();
-    debugLog::$max_depth = 15;
-    debugLog::kintDebugDrupal($this->MigrationImportAutoConfigThemeEntity->getLogs(), 'ImportNextSubmit__ConfigThemeEntity', true);
+    $logs = $this->MigrationImportAutoConfigThemeEntity->getLogs();
+    if ($logs)
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true);
     
     // Import des nodes.
     // ***

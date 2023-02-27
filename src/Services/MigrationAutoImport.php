@@ -4,7 +4,7 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
-use Stephane888\Debug\Utility as UtilityError;
+use Stephane888\Debug\ExceptionExtractMessage;
 use Stephane888\Debug\debugLog;
 
 /**
@@ -63,6 +63,24 @@ class MigrationAutoImport {
    * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
    */
   protected $loggerFactory;
+  /**
+   * Liste d'entites qui vont etre ignorer si elles ne sont pas traiter.
+   *
+   * @var array
+   */
+  protected $ignoreContifEntities = [
+    'domain',
+    'user'
+  ];
+  
+  /**
+   * Liste d'entites qui vont etre ignorer si elles ne sont pas traiter.
+   *
+   * @var array
+   */
+  protected $ignoreContentEntities = [
+    'user'
+  ];
   
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager) {
     $this->MigrationPluginManager = $MigrationPluginManager;
@@ -229,7 +247,8 @@ class MigrationAutoImport {
           return $results;
         }
         else {
-          $this->getLogger('migrationwbh')->warning(" Le type contentEntity : " . $this->entityTypeId . " n'est pas encore pris en compte. ");
+          if (!in_array($this->entityTypeId, $this->ignoreContentEntities))
+            $this->getLogger('migrationwbh')->warning(" Le type contentEntity (with bundle) : `" . $this->entityTypeId . "` n'est pas encore pris en compte. <br> " . json_encode($this->fieldData));
         }
       }
       // Ceci inclut egalements les configurations.
@@ -274,7 +293,10 @@ class MigrationAutoImport {
             return $results;
             break;
           default:
-            $this->getLogger('migrationwbh')->warning(" Le type configEntity : " . $this->entityTypeId . " n'est pas encore pris en compte. ");
+            if (!in_array($this->entityTypeId, $this->ignoreContifEntities)) {
+              $this->getLogger('migrationwbh')->warning(" Le type configEntity ou contentEntity (without bundle) : `" . $this->entityTypeId . "` n'est pas encore pris en compte. <br> " . json_encode($this->fieldData));
+            }
+            
             break;
         }
       }
