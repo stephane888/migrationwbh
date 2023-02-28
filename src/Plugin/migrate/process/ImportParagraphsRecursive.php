@@ -6,7 +6,6 @@ use Drupal\migrate\Row;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Stephane888\Debug\debugLog;
-use Drupal\Component\Plugin\PluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -14,7 +13,7 @@ use Drupal\migrate\Plugin\Migration;
 use Drupal\migrate\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
-use Stephane888\Debug\Utility as UtilityError;
+use Stephane888\Debug\ExceptionExtractMessage;
 use Drupal\migrationwbh\Services\MigrationAutoImport;
 
 /**
@@ -34,25 +33,25 @@ use Drupal\migrationwbh\Services\MigrationAutoImport;
  * )
  */
 final class ImportParagraphsRecursive extends ProcessPluginBase implements ContainerFactoryPluginInterface {
-
+  
   /**
    *
    * @var \Drupal\migrationwbh\Services\MigrationAutoImport
    */
   protected $MigrationAutoImport;
-
+  
   /**
    *
    * @var \Drupal\migrate\Plugin\MigrationPluginManager
    */
   protected $MigrationPluginManager;
-
+  
   function __construct($configuration, $plugin_id, $plugin_definition, MigrationPluginManager $MigrationPluginManager, MigrationAutoImport $MigrationAutoImport) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->MigrationAutoImport = $MigrationAutoImport;
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -60,7 +59,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     return new static($configuration, $plugin_id, $plugin_definition, $container->get('plugin.manager.migration'), $container->get('migrationwbh.migrate_auto_import'));
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -76,7 +75,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
     }
     return null;
   }
-
+  
   protected function importParagraph($value) {
     if (!empty($value['relationships'])) {
       foreach ($value['relationships'] as $fieldName => $val) {
@@ -109,7 +108,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
     }
     return null;
   }
-
+  
   protected function getParagraphRow(array $value) {
     if ($value['attributes']) {
       $type = explode("paragraph--", $value['type']);
@@ -155,7 +154,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
         else
           $proccess_field[$k] = $k;
       }
-
+      
       return [
         'attributes' => $attributes,
         'proccess_field' => $proccess_field
@@ -163,7 +162,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
     }
     return null;
   }
-
+  
   /**
    * --
    *
@@ -179,9 +178,9 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
     }
     catch (\Exception $e) {
       $migrateParagraph->setStatus(MigrationInterface::STATUS_IDLE);
-      debugLog::kintDebugDrupal(UtilityError::errorAll($e), 'runParagraphImport--error--', true);
+      debugLog::kintDebugDrupal(ExceptionExtractMessage::errorAll($e), 'runParagraphImport--error--', true);
       return false;
     }
   }
-
+  
 }

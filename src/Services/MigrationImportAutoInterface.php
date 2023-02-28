@@ -4,8 +4,7 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
-use Stephane888\Debug\debugLog;
-use Stephane888\Debug\Utility as UtilityError;
+use Stephane888\Debug\ExceptionExtractMessage;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
 
@@ -16,7 +15,7 @@ class MigrationImportAutoInterface {
    * Permet de recuperer les données provenant de relation Ship.
    */
   protected $fieldData;
-
+  
   /**
    * Permet de recuperer les données à partir d'une source.
    */
@@ -37,7 +36,7 @@ class MigrationImportAutoInterface {
   protected array $rawDatas = [];
   protected $debugLog;
   protected $rollback = false;
-
+  
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       throw new \ErrorException('Données non valide');
@@ -45,11 +44,11 @@ class MigrationImportAutoInterface {
     }
     $this->fieldData = $data;
   }
-
+  
   public function setUrl($url) {
     $this->url = $url;
   }
-
+  
   protected function runMigrate(array $configuration) {
     $this->configuration = $configuration;
     if ($this->SkypRunMigrate)
@@ -77,7 +76,7 @@ class MigrationImportAutoInterface {
       $dbg = [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
-        'errors' => UtilityError::errorAll($e, 7),
+        'errors' => ExceptionExtractMessage::errorAll($e, 7),
         'error_value' => $e->getContentToDebug()
       ];
       $this->debugLog['runMigrate'][] = $dbg;
@@ -88,13 +87,13 @@ class MigrationImportAutoInterface {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
         'configuration' => $configuration,
-        'errors' => UtilityError::errorAll($e, 7)
+        'errors' => ExceptionExtractMessage::errorAll($e, 7)
       ];
       $this->debugLog['runMigrate'][] = $dbg;
       return false;
     }
   }
-
+  
   /**
    * Les resultats d'une requetes peuvent avoir des contenus de types
    * differents.
@@ -117,7 +116,7 @@ class MigrationImportAutoInterface {
     //
     return $results;
   }
-
+  
   /**
    * Permet de recuper les données à partir de l'url;
    */
@@ -132,7 +131,7 @@ class MigrationImportAutoInterface {
         $url
       ]
     ];
-
+    
     /**
      *
      * @var \Drupal\migrationwbh\Plugin\migrate_plus\data_parser\JsonApi $json_api
@@ -140,7 +139,7 @@ class MigrationImportAutoInterface {
     $json_api = $this->DataParserPluginManager->createInstance('json_api', $conf);
     $this->rawDatas = $json_api->getDataByExternalApi($url);
   }
-
+  
   protected function performRawDatas() {
     if (!empty($this->rawDatas['data']) && empty($this->rawDatas['data'][0])) {
       $temp = $this->rawDatas['data'];
@@ -148,28 +147,28 @@ class MigrationImportAutoInterface {
       $this->rawDatas['data'][0] = $temp;
     }
   }
-
+  
   /**
    * Base de validation.
    */
   protected function validationDatas() {
     //
   }
-
+  
   public function getDebugLog() {
     return $this->debugLog;
   }
-
+  
   public function getRawDatas() {
     return $this->rawDatas;
   }
-
+  
   public function getConfiguration() {
     return $this->configuration;
   }
-
+  
   public function getFieldData() {
     return $this->fieldData;
   }
-
+  
 }

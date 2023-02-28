@@ -54,8 +54,7 @@ class MigrationWbhImport extends ConfigFormBase {
     'wbhorizon_menu_link_content' => 'wbhorizon_menu_link_content',
     'wbhorizon_block' => 'wbhorizon_block',
     'wbhorizon_block_content_menu' => 'wbhorizon_block_content_menu',
-    'wbhorizon_block_content_bp' => 'wbhorizon_block_content_bp',
-    "wbhorizon_paragraph_base" => "wbhorizon_paragraph_base"
+    'wbhorizon_block_content_bp' => 'wbhorizon_block_content_bp'
   ];
   /**
    *
@@ -409,11 +408,11 @@ class MigrationWbhImport extends ConfigFormBase {
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
+    debugLog::$max_depth = 15;
     // Import des pages web.
     $urlPageWeb = trim($config['external_domain'], '/') . '/jsonapi/export/page-web';
     $this->MigrationImportAutoSiteInternetEntity->setUrl($urlPageWeb);
     $this->MigrationImportAutoSiteInternetEntity->runImport();
-    debugLog::$max_depth = 15;
     $logs = $this->MigrationImportAutoSiteInternetEntity->getLogs();
     if ($logs)
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true);
@@ -430,7 +429,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->MigrationImportAutoParagraph->runImport();
     $logs = $this->MigrationImportAutoParagraph->getLogs();
     if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Paragraph', true);
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Paragraph', true, "logs");
     // Import du theme.
     $urlConfigThemeEntity = trim($config['external_domain'], '/') . '/jsonapi/export/template-theme';
     $this->MigrationImportAutoConfigThemeEntity->setUrl($urlConfigThemeEntity);

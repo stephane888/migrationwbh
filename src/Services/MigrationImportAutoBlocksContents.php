@@ -96,6 +96,7 @@ class MigrationImportAutoBlocksContents extends MigrationImportAutoBase {
   protected function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
+    $this->getLayoutBuilderField($data_rows[$k]);
     // add uuid
     $data_rows[$k]['uuid'] = $row['id'];
     // Set type

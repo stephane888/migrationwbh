@@ -4,10 +4,10 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
-use Stephane888\Debug\debugLog;
-use Stephane888\Debug\Utility as UtilityError;
+use Stephane888\Debug\ExceptionExtractMessage;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\layout_builder\Section;
 
 class MigrationImportAutoBase {
   private $SkypRunMigrate = false;
@@ -105,7 +105,7 @@ class MigrationImportAutoBase {
       $dbg = [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
-        'errors' => UtilityError::errorAll($e, 7),
+        'errors' => ExceptionExtractMessage::errorAll($e, 7),
         'error_value' => $e->getContentToDebug()
       ];
       // $this->debugLog['runMigrate'][] = $dbg;
@@ -118,7 +118,7 @@ class MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
         'configuration' => $configuration,
-        'errors' => UtilityError::errorAll($e, 7)
+        'errors' => ExceptionExtractMessage::errorAll($e, 7)
       ];
       // $this->debugLog['runMigrate'][] = $dbg;
       $this->addDebugLogs($dbg, 'runMigrate');
@@ -130,7 +130,7 @@ class MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
         'configuration' => $configuration,
-        'errors' => UtilityError::errorAll($e, 7)
+        'errors' => ExceptionExtractMessage::errorAll($e, 7)
       ];
       // $this->debugLog['runMigrate'][] = $dbg;
       $this->addDebugLogs($dbg, 'runMigrate');
@@ -255,7 +255,7 @@ class MigrationImportAutoBase {
       $dbg = [
         'fieldName' => $fieldName,
         'value' => $value,
-        'errors' => UtilityError::errorAll($e, 7),
+        'errors' => ExceptionExtractMessage::errorAll($e, 7),
         'error_value' => $e->getContentToDebug()
       ];
       $this->addToLogs($dbg, $fieldName);
@@ -263,7 +263,7 @@ class MigrationImportAutoBase {
     catch (\Exception $e) {
       $dbg = [
         'value' => $value,
-        'errors' => UtilityError::errorAll($e, 7)
+        'errors' => ExceptionExtractMessage::errorAll($e, 7)
       ];
       $this->addToLogs($dbg, $fieldName);
     }
@@ -328,6 +328,29 @@ class MigrationImportAutoBase {
   
   public function getEntityTypeId() {
     return $this->entityTypeId;
+  }
+  
+  /**
+   * Drupal pour le moment a opter de ne pas exposer les données de layouts
+   * builder, car ce dernier utilise le format json et un ya quelques probleme
+   * de logique ou conception.
+   * Pour remedier à cela, on opte de fournir le nessaire pour son import en
+   * attendant la reponse de drupal.
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2942975
+   *
+   * @param array $entity
+   */
+  protected function getLayoutBuilderField(array &$entity) {
+    if (!empty($entity['layout_builder__layout'])) {
+      foreach ($entity['layout_builder__layout'] as $i => $section) {
+        /**
+         *
+         * @var \Drupal\layout_builder\Section $section
+         */
+        $entity['layout_builder__layout'][$i] = Section::fromArray($section);
+      }
+    }
   }
   
 }
