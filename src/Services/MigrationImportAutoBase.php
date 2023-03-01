@@ -164,7 +164,8 @@ class MigrationImportAutoBase {
       if ($this->ignoreExistantData) {
         $entity = \Drupal::entityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
         if ($entity) {
-          \Drupal::messenger()->addStatus(' Ignore : ' . $entityId . ' => ' . $entityId, true);
+          // \Drupal::messenger()->addStatus(' Ignore : ' . $entityId . ' => ' .
+          // $entityId, true);
           continue;
         }
       }
