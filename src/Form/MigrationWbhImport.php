@@ -412,20 +412,24 @@ class MigrationWbhImport extends ConfigFormBase {
     // Import des pages web.
     $urlPageWeb = trim($config['external_domain'], '/') . '/jsonapi/export/page-web';
     $this->MigrationImportAutoSiteInternetEntity->setUrl($urlPageWeb);
+    $this->MigrationImportAutoSiteInternetEntity->activeIgnoreData();
     $this->MigrationImportAutoSiteInternetEntity->runImport();
     $logs = $this->MigrationImportAutoSiteInternetEntity->getLogs();
     if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true);
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true, "logs");
     // Import des block_content.
-    $urlBlockContents = trim($config['external_domain'], '/') . '/jsonapi/export/block_content';
-    $this->MigrationImportAutoBlockContent->setUrl($urlBlockContents);
-    $this->MigrationImportAutoBlockContent->runImport();
-    $logs = $this->MigrationImportAutoBlockContent->getLogs();
-    if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true);
+    // $urlBlockContents = trim($config['external_domain'], '/') .
+    // '/jsonapi/export/block_content';
+    // $this->MigrationImportAutoBlockContent->setUrl($urlBlockContents);
+    // $this->MigrationImportAutoBlockContent->runImport();
+    // $logs = $this->MigrationImportAutoBlockContent->getLogs();
+    // if ($logs)
+    // debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true,
+    // "logs");
     // Import paragraph.
     $urlParagraph = trim($config['external_domain'], '/') . '/jsonapi/export/paragraph';
     $this->MigrationImportAutoParagraph->setUrl($urlParagraph);
+    $this->MigrationImportAutoParagraph->activeIgnoreData();
     $this->MigrationImportAutoParagraph->runImport();
     $logs = $this->MigrationImportAutoParagraph->getLogs();
     if ($logs)
@@ -436,7 +440,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->MigrationImportAutoConfigThemeEntity->runImport();
     $logs = $this->MigrationImportAutoConfigThemeEntity->getLogs();
     if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true);
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true, "logs");
     
     // Import des nodes.
     // ***
@@ -467,7 +471,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->MigrationImportAutoBlock->setUrl($urlBlock);
     $this->MigrationImportAutoBlock->runImport();
     debugLog::$max_depth = 15;
-    debugLog::kintDebugDrupal($this->MigrationImportAutoBlock->getLogs(), 'ImportNextSubmit__Block', true);
+    debugLog::kintDebugDrupal($this->MigrationImportAutoBlock->getLogs(), 'ImportNextSubmit__Block', true, "logs");
     //
     // ***
     $form_state->setRedirect('migrationwbh.runimportform', [], [

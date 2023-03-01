@@ -9,9 +9,9 @@ use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity\File;
-use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
+use GuzzleHttp\Client;
 
 class MigrationImportAutoFile extends MigrationImportAutoBase {
   protected $fieldData;
@@ -29,7 +29,7 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-
+  
   /**
    * les champs qui serront ignorées dans le mapping.
    *
@@ -41,18 +41,18 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
   ];
   private $unGetRelationships = [];
   private $SkypRunMigrate = false;
-
+  
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
   }
-
+  
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw DebugCode::exception(' Vous devez definir fieldData ', $this->fieldData);
     $this->retrieveDatas();
-
+    
     /**
      * --
      *
@@ -76,7 +76,7 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
     return $this->loopDatas($configuration);
     //
   }
-
+  
   /**
    * Permet de construire,
    *
@@ -91,17 +91,56 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
        * @var \Drupal\Core\File\FileSystem $filesystem
        */
       $filesystem = \Drupal::service('file_system');
-      $icon_file_destination = $row['attributes']['uri']['value'];
-      $icon_upload_path = explode($row['attributes']['filename'], $row['attributes']['uri']['value']);
-      $filesystem->prepareDirectory($icon_upload_path[0], FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-      // Save the file.
-      $url = trim(static::$configImport['external_domain'], '/') . $row['attributes']['uri']['url'];
-      $filesystem->saveData(file_get_contents($url), $icon_file_destination);
+      $file_info = $this->getBasePathFromUri($row['attributes']['uri']['value']);
+      if ($filesystem->prepareDirectory($file_info['base_path'], FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
+        // Save the file.
+        $url = trim(static::$configImport['external_domain'], '/') . $row['attributes']['uri']['url'];
+        $data = file_get_contents($url);
+        if (!empty($data)) {
+          $newUri = $filesystem->saveData($data, $row['attributes']['uri']['value']);
+          $row['attributes']['uri']['value'] = $newUri;
+          \Stephane888\Debug\debugLog::kintDebugDrupal([
+            $url,
+            static::$configImport,
+            $newUri,
+            'attributes' => $row['attributes'],
+            $row,
+            'file_info' => $file_info
+          ], 'file__buildDataRows', true, "logs");
+          // On va creer l'entité.
+          $data_rows[0] = $row['attributes'];
+        }
+      }
     }
-    // on va creer l'entité
-    $data_rows[0] = $row['attributes'];
   }
-
+  
+  /**
+   * Le uri contient egalement le nom de l'image, l'idée est de separer les
+   * deux.
+   * RQ: dans row on a un filename, mais ce dernier est parfois different ce
+   * celui au niveau de URI, et cela peut generer une erreur.
+   */
+  protected function getBasePathFromUri(string $uri) {
+    $f1 = explode("://", $uri);
+    $f2 = explode("/", $f1[1]);
+    $basePath = $f1[0] . "://";
+    $nbre = count($f2) - 1;
+    if ($nbre) {
+      for ($i = 0; $i < $nbre; $i++) {
+        $basePath .= $f2[$i] . "/";
+      }
+      $filename = $f2[$nbre];
+    }
+    else {
+      $basePath .= "migrations";
+      $filename = $f2[0];
+    }
+    return [
+      'base_path' => $basePath,
+      'filename' => $filename
+    ];
+  }
+  
   /**
    *
    * @param
@@ -121,7 +160,7 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
       }
     }
   }
-
+  
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -142,15 +181,15 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
       throw DebugCode::exception('validationDatas', $dbg);
     }
   }
-
+  
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-
+  
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-
+  
 }

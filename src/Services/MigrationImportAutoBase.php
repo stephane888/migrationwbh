@@ -42,6 +42,12 @@ class MigrationImportAutoBase {
   protected $debugLog;
   protected $rollback = false;
   protected $import = true;
+  /**
+   * Permet d'ignorer l'import d'une entite si son id existe deja.
+   *
+   * @var boolean
+   */
+  protected $ignoreExistantData = false;
   
   /**
    * entityTypeId ( node, block_content ...
@@ -55,6 +61,7 @@ class MigrationImportAutoBase {
    * @var array
    */
   protected static $logs = [];
+  //
   protected static $configImport;
   
   public function setData(array $data) {
@@ -148,13 +155,22 @@ class MigrationImportAutoBase {
     $this->validationDatas();
     foreach ($this->rawDatas['data'] as $k => $row) {
       $confRow[$k] = $configuration;
-      $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
-      $this->buildMappingProcess($confRow[$k], $confRow[$k]['process']);
       $entityId = $k;
       // Get id contenu.
       $idKey = array_key_first($configuration['source']['ids']);
       if (!empty($row['attributes'][$idKey]))
         $entityId = $row['attributes'][$idKey];
+      // ignore existant datas.
+      if ($this->ignoreExistantData) {
+        $entity = \Drupal::entityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
+        if ($entity) {
+          \Drupal::messenger()->addStatus(' Ignore : ' . $entityId . ' => ' . $entityId, true);
+          continue;
+        }
+      }
+      //
+      $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
+      $this->buildMappingProcess($confRow[$k], $confRow[$k]['process']);
       $results[$entityId] = $this->runMigrate($confRow[$k]);
       $dbg = [
         'conf' => $confRow[$k],
@@ -162,7 +178,6 @@ class MigrationImportAutoBase {
       ];
       $this->addToLogs($dbg, $entityId);
     }
-    //
     return $results;
   }
   
@@ -218,6 +233,7 @@ class MigrationImportAutoBase {
       $MigrationAutoImport = new MigrationAutoImport($this->MigrationPluginManager, $this->DataParserPluginManager);
       $MigrationAutoImport->setData($value);
       $MigrationAutoImport->rollback = $this->rollback;
+      $MigrationAutoImport->ignoreExistantData = $this->ignoreExistantData;
       if ($result = $MigrationAutoImport->runImport()) {
         // Si on une image, on essaye de recuperer le titre et l'alt.
         // if ($MigrationAutoImport->getEntityTypeId() == 'file') {
@@ -328,6 +344,14 @@ class MigrationImportAutoBase {
   
   public function getEntityTypeId() {
     return $this->entityTypeId;
+  }
+  
+  public function activeIgnoreData() {
+    $this->setIgnoreDatas(true);
+  }
+  
+  public function setIgnoreDatas($value) {
+    $this->ignoreExistantData = $value;
   }
   
   /**

@@ -82,6 +82,18 @@ class MigrationAutoImport {
     'user'
   ];
   
+  /**
+   * Permet d'ignorer l'import d'une entite si son id existe deja.
+   *
+   * @var boolean
+   */
+  public $ignoreExistantData = false;
+  
+  /**
+   *
+   * @param MigrationPluginManager $MigrationPluginManager
+   * @param DataParserPluginManager $DataParserPluginManager
+   */
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
@@ -117,6 +129,7 @@ class MigrationAutoImport {
         $this->bundle = $type[1];
         if ($this->entityTypeId == 'node') {
           $MigrationImportAutoNode = new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoNode->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoNode->setData($this->fieldData);
           $MigrationImportAutoNode->setRollback($this->rollback);
           $results = $MigrationImportAutoNode->runImport();
@@ -130,6 +143,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'taxonomy_term') {
           $MigrationImportAutoTaxoTerm = new MigrationImportAutoTaxoTerm($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoTaxoTerm->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoTaxoTerm->setData($this->fieldData);
           $MigrationImportAutoTaxoTerm->setRollback($this->rollback);
           $results = $MigrationImportAutoTaxoTerm->runImport();
@@ -143,6 +157,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'paragraph') {
           $MigrationImportAutoParagraph = new MigrationImportAutoParagraph($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoParagraph->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoParagraph->setData($this->fieldData);
           $MigrationImportAutoParagraph->setRollback($this->rollback);
           $results = $MigrationImportAutoParagraph->runImport();
@@ -156,6 +171,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'block_content') {
           $MigrationImportAutoBlockContent = new MigrationImportAutoBlockContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoBlockContent->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoBlockContent->setData($this->fieldData);
           $MigrationImportAutoBlockContent->setRollback($this->rollback);
           $results = $MigrationImportAutoBlockContent->runImport();
@@ -169,6 +185,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'blocks_contents') {
           $MigrationImportAutoBlocksContents = new MigrationImportAutoBlocksContents($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoBlocksContents->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoBlocksContents->setData($this->fieldData);
           $MigrationImportAutoBlocksContents->setRollback($this->rollback);
           $results = $MigrationImportAutoBlocksContents->runImport();
@@ -183,6 +200,7 @@ class MigrationAutoImport {
         //
         elseif ($this->entityTypeId == 'menu_link_content') {
           $MigrationImportAutoMenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoMenuLinkContent->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoMenuLinkContent->setData($this->fieldData);
           $MigrationImportAutoMenuLinkContent->setRollback($this->rollback);
           $results = $MigrationImportAutoMenuLinkContent->runImport();
@@ -196,6 +214,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'site_internet_entity') {
           $MigrationImportAutoSiteInternetEntity = new MigrationImportAutoSiteInternetEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoSiteInternetEntity->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoSiteInternetEntity->setData($this->fieldData);
           $MigrationImportAutoSiteInternetEntity->setRollback($this->rollback);
           $results = $MigrationImportAutoSiteInternetEntity->runImport();
@@ -209,6 +228,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'commerce_product') {
           $MigrationImportAutoCommerceProduct = new MigrationImportAutoCommerceProduct($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoCommerceProduct->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoCommerceProduct->setData($this->fieldData);
           $MigrationImportAutoCommerceProduct->setRollback($this->rollback);
           $results = $MigrationImportAutoCommerceProduct->runImport();
@@ -222,6 +242,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'commerce_product_variation') {
           $MigrationImportAutoCommerceProductVariation = new MigrationImportAutoCommerceProductVariation($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoCommerceProductVariation->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoCommerceProductVariation->setData($this->fieldData);
           $MigrationImportAutoCommerceProductVariation->setRollback($this->rollback);
           $results = $MigrationImportAutoCommerceProductVariation->runImport();
@@ -235,6 +256,7 @@ class MigrationAutoImport {
         }
         elseif ($this->entityTypeId == 'commerce_store') {
           $MigrationImportAutoCommerceStore = new MigrationImportAutoCommerceStore($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+          $MigrationImportAutoCommerceStore->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoCommerceStore->setData($this->fieldData);
           $MigrationImportAutoCommerceStore->setRollback($this->rollback);
           $results = $MigrationImportAutoCommerceStore->runImport();
@@ -256,6 +278,7 @@ class MigrationAutoImport {
         switch ($this->entityTypeId) {
           case 'file':
             $MigrationImportAutoFile = new MigrationImportAutoFile($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoFile->setIgnoreDatas($this->ignoreExistantData);
             $MigrationImportAutoFile->setData($this->fieldData);
             $MigrationImportAutoFile->setRollback($this->rollback);
             $results = $MigrationImportAutoFile->runImport();
@@ -264,6 +287,7 @@ class MigrationAutoImport {
             break;
           case 'menu':
             $MigrationImportAutoMenu = new MigrationImportAutoMenu($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoMenu->setIgnoreDatas($this->ignoreExistantData);
             $MigrationImportAutoMenu->setData($this->fieldData);
             $MigrationImportAutoMenu->setRollback($this->rollback);
             $results = $MigrationImportAutoMenu->runImport();
@@ -272,6 +296,7 @@ class MigrationAutoImport {
             break;
           case 'block':
             $MigrationImportAutoBlock = new MigrationImportAutoBlock($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoBlock->setIgnoreDatas($this->ignoreExistantData);
             $MigrationImportAutoBlock->setData($this->fieldData);
             $MigrationImportAutoBlock->setRollback($this->rollback);
             $results = $MigrationImportAutoBlock->runImport();
@@ -279,6 +304,7 @@ class MigrationAutoImport {
             return $results;
           case 'commerce_currency':
             $MigrationImportAutoCommerceCurrency = new MigrationImportAutoCommerceCurrency($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoCommerceCurrency->setIgnoreDatas($this->ignoreExistantData);
             $MigrationImportAutoCommerceCurrency->setData($this->fieldData);
             $MigrationImportAutoCommerceCurrency->setRollback($this->rollback);
             $results = $MigrationImportAutoCommerceCurrency->runImport();
@@ -286,6 +312,7 @@ class MigrationAutoImport {
             return $results;
           case 'config_theme_entity':
             $MigrationImportAutoConfigThemeEntity = new MigrationImportAutoConfigThemeEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoConfigThemeEntity->setIgnoreDatas($this->ignoreExistantData);
             $MigrationImportAutoConfigThemeEntity->setData($this->fieldData);
             $MigrationImportAutoConfigThemeEntity->setRollback($this->rollback);
             $results = $MigrationImportAutoConfigThemeEntity->runImport();

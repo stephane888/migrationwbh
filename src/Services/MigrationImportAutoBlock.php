@@ -74,7 +74,6 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       'process' => []
     ];
     $results = $this->loopDatas($configuration);
-    
     return $results;
   }
   
