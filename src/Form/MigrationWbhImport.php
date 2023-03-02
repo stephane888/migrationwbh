@@ -183,6 +183,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // if (!empty($form['actions']['submit'])) {
     // $form['actions']['submit']['#value'] = 'save config';
     // }
+    $this->createDomain();
     $this->disableUseDomainConfig();
     $this->actionButtons($form, $form_state, "Importer les contenus et passer à l'etape suivante", 'ImportNextSubmit');
   }
@@ -193,7 +194,6 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param FormStateInterface $form_state
    */
   protected function formState3(array &$form, FormStateInterface $form_state) {
-    $this->createDomain();
     $this->assureThemeIsActive();
     $this->actionButtons($form, $form_state, "Importer les blocks et passer à l'etape finale", 'ImportNextSubmit2');
   }
@@ -412,7 +412,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // Import des pages web.
     $urlPageWeb = trim($config['external_domain'], '/') . '/jsonapi/export/page-web';
     $this->MigrationImportAutoSiteInternetEntity->setUrl($urlPageWeb);
-    $this->MigrationImportAutoSiteInternetEntity->activeIgnoreData();
+    // $this->MigrationImportAutoSiteInternetEntity->activeIgnoreData();
     $this->MigrationImportAutoSiteInternetEntity->runImport();
     $logs = $this->MigrationImportAutoSiteInternetEntity->getLogs();
     if ($logs)
@@ -429,7 +429,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // Import paragraph.
     $urlParagraph = trim($config['external_domain'], '/') . '/jsonapi/export/paragraph';
     $this->MigrationImportAutoParagraph->setUrl($urlParagraph);
-    $this->MigrationImportAutoParagraph->activeIgnoreData();
+    // $this->MigrationImportAutoParagraph->activeIgnoreData();
     $this->MigrationImportAutoParagraph->runImport();
     $logs = $this->MigrationImportAutoParagraph->getLogs();
     if ($logs)

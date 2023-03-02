@@ -302,6 +302,14 @@ class MigrationAutoImport {
             $results = $MigrationImportAutoBlock->runImport();
             static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoBlock->getLogs();
             return $results;
+          case 'webform':
+            $MigrationImportAutoWebform = new MigrationImportAutoWebform($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+            $MigrationImportAutoWebform->setIgnoreDatas($this->ignoreExistantData);
+            $MigrationImportAutoWebform->setData($this->fieldData);
+            $MigrationImportAutoWebform->setRollback($this->rollback);
+            $results = $MigrationImportAutoWebform->runImport();
+            static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoWebform->getLogs();
+            return $results;
           case 'commerce_currency':
             $MigrationImportAutoCommerceCurrency = new MigrationImportAutoCommerceCurrency($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
             $MigrationImportAutoCommerceCurrency->setIgnoreDatas($this->ignoreExistantData);

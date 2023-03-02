@@ -91,7 +91,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       // une entité avec bundle sans le bundle.
       // objectif etait de pouvoir importer du contenus à partir des
       // configurations.
-      // ( en attendant, on importer ).
+      // ( en attendant, on importe tous les paragraphes ).
     }
   }
   

@@ -64,6 +64,11 @@ class MigrationImportAutoBase {
   //
   protected static $configImport;
   
+  /**
+   * id du domaine encours.
+   */
+  protected $domaineId;
+  
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       throw new \ErrorException('Données non valide');
@@ -180,6 +185,24 @@ class MigrationImportAutoBase {
       $this->addToLogs($dbg, $entityId);
     }
     return $results;
+  }
+  
+  /**
+   * recupere la configuration encours.
+   */
+  public function getCurrentDomaine() {
+    if (!$this->domaineId) {
+      /**
+       *
+       * @var \Drupal\domain\DomainNegotiator $domainNegotiator
+       */
+      $domainNegotiator = \Drupal::service("domain.negotiator");
+      $domain = $domainNegotiator->getActiveDomain();
+      if ($domain) {
+        $this->domaineId = $domain->id();
+      }
+    }
+    return $this->domaineId;
   }
   
   /**

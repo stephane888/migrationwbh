@@ -4,50 +4,55 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
+use Drupal\migrate\MigrateExecutable;
+use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity\File;
-use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
+use PhpParser\Node\Stmt\Static_;
 
-class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
-  
+class MigrationImportAutoWebform extends MigrationImportAutoBase {
+  protected $fieldData;
   /**
-   * disponible pour des entités avec bundles.
+   * Données brute provenant du site distant.
+   * Structure :
+   * un array donc chaque ligne represente une donnée.
+   * $rawDatas[data]
+   * $rawDatas[data][0--n][attributes]
+   * $rawDatas[data][0--n][relationships]
+   * $rawDatas[data][0--n][links]
+   * $rawDatas[data][0--n][type]
+   * $rawDatas[links]
+   *
+   * @var array
    */
-  protected $bundle = null;
+  protected array $rawDatas = [];
   
   /**
    * les champs qui serront ignorées dans le mapping.
-   * * Les colonnes avec les dates posent probleme. ( il faudra pouvoir les
-   * identifiers et appliqué une conversion ).
    *
    * @var array
    */
   private $unMappingFields = [
-    'revision_timestamp',
-    'revision_log',
-    'created',
-    'changed'
+    "visibility"
   ];
-  private $unGetRelationships = [
-    "commerce_product_type",
-    'revision_uid',
-    'uid'
-  ];
+  private $unGetRelationships = [];
+  private $SkypRunMigrate = false;
   
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
-    $this->bundle = $bundle;
   }
   
   public function runImport() {
     if (!$this->fieldData && !$this->url)
-      throw new \ErrorException(' Vous devez definir fieldData ou une url ');
+      throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
+    $this->getConfigImport();
+    
     /**
      * --
      *
@@ -55,13 +60,12 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
      */
     $configuration = [
       'destination' => [
-        'plugin' => 'entity:' . $this->entityTypeId,
-        'default_bundle' => $this->bundle
+        'plugin' => 'entity:' . $this->entityTypeId
       ],
       'source' => [
         'ids' => [
-          'drupal_internal__product_id' => [
-            'type' => 'integer'
+          'drupal_internal__id' => [
+            'type' => 'string'
           ]
         ],
         'plugin' => 'embedded_data',
@@ -69,8 +73,8 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-    
-    return $this->loopDatas($configuration);
+    $results = $this->loopDatas($configuration);
+    return $results;
   }
   
   /**
@@ -81,22 +85,6 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
   protected function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
-    // on recupere les données pour les layouts.
-    $this->getLayoutBuilderField($data_rows[$k]);
-    // Set type
-    $data_rows[$k]['type'] = $row['relationships']['commerce_product_type']['data']['meta']["drupal_internal__target_id"];
-    $this->bundle = $data_rows[$k]['type'];
-    // Get relationships datas
-    foreach ($row['relationships'] as $fieldName => $value) {
-      if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
-        continue;
-      // On met à jour le domaine.
-      if ($fieldName == 'field_domain_access') {
-        $data_rows[$k][$fieldName] = $this->getCurrentDomaine();
-      }
-      else
-        $this->getRelationShip($data_rows, $k, $fieldName, $value);
-    }
   }
   
   /**
@@ -108,8 +96,8 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
   protected function buildMappingProcess($configuration, array &$process) {
     if (!empty($configuration['source']['data_rows'][0])) {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
-        if ($fieldName == 'drupal_internal__product_id') {
-          $process['product_id'] = $fieldName;
+        if ($fieldName == 'drupal_internal__id') {
+          $process['id'] = $fieldName;
         }
         elseif (in_array($fieldName, $this->unMappingFields))
           continue;
@@ -127,7 +115,8 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
-    if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__product_id'])) {
+    $this->performRawDatas();
+    if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
       return true;
     }
     else {
@@ -140,16 +129,12 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
   }
   
   protected function addToLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
   
   protected function addDebugLogs($data, $key = null) {
-    if ($this->entityTypeId && $this->bundle)
-      static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
-    elseif ($this->entityTypeId)
+    if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
   
