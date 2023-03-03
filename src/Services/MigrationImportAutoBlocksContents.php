@@ -106,7 +106,12 @@ class MigrationImportAutoBlocksContents extends MigrationImportAutoBase {
     foreach ($row['relationships'] as $fieldName => $value) {
       if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
         continue;
-      $this->getRelationShip($data_rows, $k, $fieldName, $value);
+      // On met à jour le domaine.
+      if ($fieldName == 'field_domain_access') {
+        $data_rows[$k][$fieldName] = $this->getCurrentDomaine();
+      }
+      else
+        $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
   }
   
