@@ -21,6 +21,10 @@ services:
     class: Drupal\migrationwbh\Services\MigrationImportAutoParagraph
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','paragraph','']
     
+  migrationwbh.migrate_auto_import.commerce_product:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoCommerceProduct
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','commerce_product','']
+    
   migrationwbh.migrate_auto_import.block_content:
     class: Drupal\migrationwbh\Services\MigrationImportAutoBlockContent
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','block_content','']

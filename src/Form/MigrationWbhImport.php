@@ -12,6 +12,7 @@ use Drupal\migrationwbh\Services\MigrationImportAutoBlockContent;
 use Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity;
 use Drupal\migrationwbh\Services\MigrationImportAutoBlock;
 use Drupal\migrationwbh\Services\MigrationImportAutoParagraph;
+use Drupal\migrationwbh\Services\MigrationImportAutoCommerceProduct;
 use Drupal\layoutgenentitystyles\Services\LayoutgenentitystylesServices;
 use Drupal\Core\Render\Renderer;
 use Stephane888\Debug\debugLog;
@@ -88,6 +89,12 @@ class MigrationWbhImport extends ConfigFormBase {
   
   /**
    *
+   * @var MigrationImportAutoCommerceProduct
+   */
+  protected $MigrationImportAutoCommerceProduct;
+  
+  /**
+   *
    * @var LayoutgenentitystylesServices
    */
   protected $LayoutgenentitystylesServices;
@@ -97,7 +104,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param ConfigFactoryInterface $config_factory
    * @param MigrationImport $MigrationImport
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity, MigrationImportAutoBlockContent $MigrationImportAutoBlockContent, MigrationImportAutoConfigThemeEntity $MigrationImportAutoConfigThemeEntity, MigrationImportAutoBlock $MigrationImportAutoBlock, LayoutgenentitystylesServices $LayoutgenentitystylesServices, MigrationImportAutoParagraph $MigrationImportAutoParagraph) {
+  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity, MigrationImportAutoBlockContent $MigrationImportAutoBlockContent, MigrationImportAutoConfigThemeEntity $MigrationImportAutoConfigThemeEntity, MigrationImportAutoBlock $MigrationImportAutoBlock, LayoutgenentitystylesServices $LayoutgenentitystylesServices, MigrationImportAutoParagraph $MigrationImportAutoParagraph, MigrationImportAutoCommerceProduct $MigrationImportAutoCommerceProduct) {
     parent::__construct($config_factory);
     $this->MigrationImport = $MigrationImport;
     $this->Renderer = $Renderer;
@@ -107,6 +114,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->MigrationImportAutoBlock = $MigrationImportAutoBlock;
     $this->LayoutgenentitystylesServices = $LayoutgenentitystylesServices;
     $this->MigrationImportAutoParagraph = $MigrationImportAutoParagraph;
+    $this->MigrationImportAutoCommerceProduct = $MigrationImportAutoCommerceProduct;
   }
   
   /**
@@ -114,7 +122,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'), $container->get('layoutgenentitystyles.add.style.theme'), $container->get('migrationwbh.migrate_auto_import.paragraph'));
+    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'), $container->get('layoutgenentitystyles.add.style.theme'), $container->get('migrationwbh.migrate_auto_import.paragraph'), $container->get('migrationwbh.migrate_auto_import.commerce_product'));
   }
   
   /**
@@ -426,7 +434,9 @@ class MigrationWbhImport extends ConfigFormBase {
     // if ($logs)
     // debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true,
     // "logs");
-    // Import paragraph.
+    /**
+     * Import paragraph.
+     */
     $urlParagraph = trim($config['external_domain'], '/') . '/jsonapi/export/paragraph';
     $this->MigrationImportAutoParagraph->setUrl($urlParagraph);
     // $this->MigrationImportAutoParagraph->activeIgnoreData();
@@ -434,7 +444,18 @@ class MigrationWbhImport extends ConfigFormBase {
     $logs = $this->MigrationImportAutoParagraph->getLogs();
     if ($logs)
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Paragraph', true, "logs");
-    // Import du theme.
+    /**
+     * Import des produits.
+     */
+    $urlCommerceProduct = trim($config['external_domain'], '/') . '/jsonapi/export/commerce_product';
+    $this->MigrationImportAutoCommerceProduct->setUrl($urlCommerceProduct);
+    $this->MigrationImportAutoCommerceProduct->runImport();
+    $logs = $this->MigrationImportAutoCommerceProduct->getLogs();
+    if ($logs)
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__commerce_product', true, "logs");
+    /**
+     * Import du theme.
+     */
     $urlConfigThemeEntity = trim($config['external_domain'], '/') . '/jsonapi/export/template-theme';
     $this->MigrationImportAutoConfigThemeEntity->setUrl($urlConfigThemeEntity);
     $this->MigrationImportAutoConfigThemeEntity->runImport();
