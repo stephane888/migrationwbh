@@ -425,21 +425,21 @@ class MigrationWbhImport extends ConfigFormBase {
     $logs = $this->MigrationImportAutoSiteInternetEntity->getLogs();
     if ($logs)
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true, "logs");
-    // Import des block_content.
-    // $urlBlockContents = trim($config['external_domain'], '/') .
-    // '/jsonapi/export/block_content';
-    // $this->MigrationImportAutoBlockContent->setUrl($urlBlockContents);
-    // $this->MigrationImportAutoBlockContent->runImport();
-    // $logs = $this->MigrationImportAutoBlockContent->getLogs();
-    // if ($logs)
-    // debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true,
-    // "logs");
+    /**
+     * Import des block_content
+     */
+    $urlBlockContents = trim($config['external_domain'], '/') . '/jsonapi/export/block_content';
+    $this->MigrationImportAutoBlockContent->setUrl($urlBlockContents);
+    $this->MigrationImportAutoBlockContent->runImport();
+    $logs = $this->MigrationImportAutoBlockContent->getLogs();
+    if ($logs)
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true, "logs");
     /**
      * Import paragraph.
      */
     $urlParagraph = trim($config['external_domain'], '/') . '/jsonapi/export/paragraph';
     $this->MigrationImportAutoParagraph->setUrl($urlParagraph);
-    // $this->MigrationImportAutoParagraph->activeIgnoreData();
+    $this->MigrationImportAutoParagraph->activeIgnoreData();
     $this->MigrationImportAutoParagraph->runImport();
     $logs = $this->MigrationImportAutoParagraph->getLogs();
     if ($logs)
@@ -450,6 +450,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $urlCommerceProduct = trim($config['external_domain'], '/') . '/jsonapi/export/commerce_product';
     $this->MigrationImportAutoCommerceProduct->setUrl($urlCommerceProduct);
     $this->MigrationImportAutoCommerceProduct->runImport();
+    $this->MigrationImportAutoCommerceProduct->activeIgnoreData();
     $logs = $this->MigrationImportAutoCommerceProduct->getLogs();
     if ($logs)
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__commerce_product', true, "logs");
