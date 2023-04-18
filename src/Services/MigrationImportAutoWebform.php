@@ -29,7 +29,7 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-  
+
   /**
    * les champs qui serront ignorées dans le mapping.
    *
@@ -40,19 +40,19 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
   ];
   private $unGetRelationships = [];
   private $SkypRunMigrate = false;
-  
+
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
   }
-  
+
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
     $this->getConfigImport();
-    
+
     /**
      * --
      *
@@ -76,7 +76,7 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
     $results = $this->loopDatas($configuration);
     return $results;
   }
-  
+
   /**
    * Permet de construire,
    *
@@ -86,7 +86,7 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
   }
-  
+
   /**
    *
    * @param
@@ -106,7 +106,7 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
       }
     }
   }
-  
+
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -116,6 +116,8 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
    */
   protected function validationDatas() {
     $this->performRawDatas();
+    if (empty($this->rawDatas['data']))
+      return true;
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
       return true;
     }
@@ -127,15 +129,15 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
       throw DebugCode::exception('validationDatas', $dbg);
     }
   }
-  
+
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-  
+
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
+
 }

@@ -5,15 +5,8 @@ migrationwbh.settings_form:
   route_name: migrationwbh.settings_form
   weight: 10
 
-migrationwbh.runimport:
-  title: 'Importer votre site'
-  description: 'Importer les contenus et les données de configuration.'
-  parent: system.admin_config_services
-  route_name: migrationwbh.runimport
-  weight: 10
-  
 migrationwbh.runimportform:
-  title: 'Importer votre site (v2)'
+  title: 'Importer votre site'
   description: 'Importer les contenus et les données de configuration.'
   parent: system.admin_config_services
   route_name: migrationwbh.runimportform

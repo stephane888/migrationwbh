@@ -29,18 +29,18 @@ class MigrationWbhImport extends ConfigFormBase {
    * @var \Drupal\migrationwbh\Services\MigrationImport
    */
   protected $MigrationImport;
-  
+
   /**
    *
    * @var \Drupal\Core\Render\Renderer
    */
   protected $Renderer;
-  
+
   /**
    *
    * @var integer
    */
-  protected $maxStep = 4;
+  protected $maxStep = 5;
   /**
    * elle permet juste afficher, le processus d'import n'est pas liée
    * à ce dernier, mais voir => ImportNextSubmit.
@@ -62,43 +62,43 @@ class MigrationWbhImport extends ConfigFormBase {
    * @var MigrationImportAutoSiteInternetEntity
    */
   protected $MigrationImportAutoSiteInternetEntity;
-  
+
   /**
    *
    * @var MigrationImportAutoBlockContent
    */
   protected $MigrationImportAutoBlockContent;
-  
+
   /**
    *
    * @var MigrationImportAutoConfigThemeEntity
    */
   protected $MigrationImportAutoConfigThemeEntity;
-  
+
   /**
    *
    * @var MigrationImportAutoBlock
    */
   protected $MigrationImportAutoBlock;
-  
+
   /**
    *
    * @var MigrationImportAutoParagraph
    */
   protected $MigrationImportAutoParagraph;
-  
+
   /**
    *
    * @var MigrationImportAutoCommerceProduct
    */
   protected $MigrationImportAutoCommerceProduct;
-  
+
   /**
    *
    * @var LayoutgenentitystylesServices
    */
   protected $LayoutgenentitystylesServices;
-  
+
   /**
    *
    * @param ConfigFactoryInterface $config_factory
@@ -116,7 +116,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->MigrationImportAutoParagraph = $MigrationImportAutoParagraph;
     $this->MigrationImportAutoCommerceProduct = $MigrationImportAutoCommerceProduct;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -124,7 +124,7 @@ class MigrationWbhImport extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'), $container->get('layoutgenentitystyles.add.style.theme'), $container->get('migrationwbh.migrate_auto_import.paragraph'), $container->get('migrationwbh.migrate_auto_import.commerce_product'));
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -142,8 +142,10 @@ class MigrationWbhImport extends ConfigFormBase {
           break;
         case 3:
           $this->formState3($form, $form_state, $config);
-          break;
         case 4:
+          $this->formState33($form, $form_state, $config);
+          break;
+        case 5:
           $this->formState4($form, $form_state, $config);
           break;
         default:
@@ -157,7 +159,7 @@ class MigrationWbhImport extends ConfigFormBase {
     }
     return $form;
   }
-  
+
   protected function formState1(array &$form, FormStateInterface $form_state, $config) {
     $form['username'] = [
       '#type' => 'textfield',
@@ -179,7 +181,7 @@ class MigrationWbhImport extends ConfigFormBase {
     //
     $this->actionButtons($form, $form_state, "Suivant", "saveConfigNext");
   }
-  
+
   /**
    *
    * @param array $form
@@ -195,7 +197,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->disableUseDomainConfig();
     $this->actionButtons($form, $form_state, "Importer les contenus et passer à l'etape suivante", 'ImportNextSubmit');
   }
-  
+
   /**
    *
    * @param array $form
@@ -203,9 +205,21 @@ class MigrationWbhImport extends ConfigFormBase {
    */
   protected function formState3(array &$form, FormStateInterface $form_state) {
     $this->assureThemeIsActive();
-    $this->actionButtons($form, $form_state, "Importer les blocks et passer à l'etape finale", 'ImportNextSubmit2');
+    $this->actionButtons($form, $form_state, "Importer les blocks", 'ImportNextSubmit2');
   }
-  
+
+  /**
+   * Limport du block entete ne marche pas à tous les couts, d'ou l'ajout de
+   * cette etape afin de forcer l'import de l'ente.
+   *
+   * @param array $form
+   * @param FormStateInterface $form_state
+   */
+  protected function formState33(array &$form, FormStateInterface $form_state) {
+    $this->assureThemeIsActive();
+    $this->actionButtons($form, $form_state, "Importer les configurations et passer à l'etape finale", 'ImportNextSubmit2');
+  }
+
   protected function formState4(array &$form, FormStateInterface $form_state, $config) {
     $form['info'] = [
       '#type' => 'html_tag',
@@ -216,7 +230,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->disabledBlocks();
     $this->actionButtons($form, $form_state);
   }
-  
+
   /**
    *
    * @param array $form
@@ -255,7 +269,7 @@ class MigrationWbhImport extends ConfigFormBase {
       }
     }
   }
-  
+
   /**
    *
    * @param array $form
@@ -312,7 +326,7 @@ class MigrationWbhImport extends ConfigFormBase {
       ];
     }
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -320,7 +334,7 @@ class MigrationWbhImport extends ConfigFormBase {
   public function getFormId() {
     return 'migrationwbh_import';
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -330,7 +344,7 @@ class MigrationWbhImport extends ConfigFormBase {
       static::$keySettings
     ];
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -345,7 +359,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // $form_state->setRedirect($response);
     $form_state->setRedirect('<front>');
   }
-  
+
   /**
    * Cette function permet d'appliquer les paramettres du themes, notament le
    * logo.
@@ -366,7 +380,7 @@ class MigrationWbhImport extends ConfigFormBase {
       // $GenerateStyleTheme->buildSubTheme(false, false);
     }
   }
-  
+
   /**
    *
    * @param array $form
@@ -380,7 +394,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $form_state->set('step', $nextStep);
     $form_state->setRebuild();
   }
-  
+
   public function saveConfigNext(array &$form, FormStateInterface $form_state) {
     // $nextStep = $form_state->get('step') + 1;
     $nextStep = !empty($_GET['step']) ? $_GET['step'] + 1 : 2;
@@ -402,7 +416,7 @@ class MigrationWbhImport extends ConfigFormBase {
     ]);
     // $form_state->setRebuild();
   }
-  
+
   /**
    * --
    *
@@ -463,7 +477,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $logs = $this->MigrationImportAutoConfigThemeEntity->getLogs();
     if ($logs)
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true, "logs");
-    
+
     // Import des nodes.
     // ***
     $form_state->setRedirect('migrationwbh.runimportform', [], [
@@ -473,7 +487,7 @@ class MigrationWbhImport extends ConfigFormBase {
     ]);
     // $form_state->setRebuild();
   }
-  
+
   /**
    * --
    *
@@ -487,7 +501,7 @@ class MigrationWbhImport extends ConfigFormBase {
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
-    
+
     // Import des blocks.
     $urlBlock = trim($config['external_domain'], '/') . '/jsonapi/export/block';
     $this->MigrationImportAutoBlock->setUrl($urlBlock);
@@ -502,7 +516,7 @@ class MigrationWbhImport extends ConfigFormBase {
       ]
     ]);
   }
-  
+
   public function selectPreviewsFieldSubmit(array &$form, FormStateInterface $form_state) {
     $pvStep = !empty($_GET['step']) ? $_GET['step'] - 1 : 0;
     if ($pvStep <= 0)
@@ -515,7 +529,7 @@ class MigrationWbhImport extends ConfigFormBase {
       ]
     ]);
   }
-  
+
   /**
    * On doit desactiver l'utilisation du domaine pour la configuration des
    * themes.
@@ -529,7 +543,7 @@ class MigrationWbhImport extends ConfigFormBase {
       $configEit->save();
     }
   }
-  
+
   /**
    * Permet de creer un domaine si aucun n'existe.
    */
@@ -546,7 +560,7 @@ class MigrationWbhImport extends ConfigFormBase {
       $domain->save();
     }
   }
-  
+
   protected function assureThemeIsActive() {
     $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadMultiple();
     // comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
@@ -569,7 +583,7 @@ class MigrationWbhImport extends ConfigFormBase {
       }
     }
   }
-  
+
   protected function addLanguage() {
     $en = \Drupal\language\Entity\ConfigurableLanguage::load('en');
     if (empty($en)) {
@@ -577,7 +591,7 @@ class MigrationWbhImport extends ConfigFormBase {
       $language->save();
     }
   }
-  
+
   protected function disabledPreprocessCss() {
     $key = "system.performance";
     $conf = \Drupal::config($key)->getRawData();
@@ -588,7 +602,7 @@ class MigrationWbhImport extends ConfigFormBase {
       $configEit->save();
     }
   }
-  
+
   /**
    * On desactive certains blocs
    */
@@ -610,7 +624,7 @@ class MigrationWbhImport extends ConfigFormBase {
       }
     }
   }
-  
+
   /**
    *
    * @return void|\Drupal\generate_style_theme\Entity\ConfigThemeEntity
@@ -631,7 +645,7 @@ class MigrationWbhImport extends ConfigFormBase {
     }
     return;
   }
-  
+
   /**
    * Permet de creer/maj un theme en function du nouveau domaine et des
    * informations de configuration de l'ancien domaine.
@@ -680,7 +694,7 @@ class MigrationWbhImport extends ConfigFormBase {
       }
     }
   }
-  
+
   /**
    * Met à jour les configurations de blocs.
    *
@@ -697,7 +711,7 @@ class MigrationWbhImport extends ConfigFormBase {
       }
     }
   }
-  
+
 }
 
 

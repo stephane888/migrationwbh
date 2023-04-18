@@ -16,7 +16,7 @@ class MigrationImportAutoBase {
    * Permet de recuperer les données provenant de relation Ship.
    */
   protected $fieldData;
-  
+
   /**
    * Permet de recuperer les données à partir d'une source.
    */
@@ -48,13 +48,13 @@ class MigrationImportAutoBase {
    * @var boolean
    */
   protected $ignoreExistantData = false;
-  
+
   /**
    * entityTypeId ( node, block_content ...
    * )
    */
   protected $entityTypeId = null;
-  
+
   /**
    * Permet de suivre l'import et analysé son status.
    *
@@ -63,12 +63,12 @@ class MigrationImportAutoBase {
   protected static $logs = [];
   //
   protected static $configImport;
-  
+
   /**
    * id du domaine encours.
    */
   protected $domaineId;
-  
+
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       throw new \ErrorException('Données non valide');
@@ -76,11 +76,11 @@ class MigrationImportAutoBase {
     }
     $this->fieldData = $data;
   }
-  
+
   public function setUrl($url) {
     $this->url = $url;
   }
-  
+
   protected function runMigrate(array $configuration) {
     $this->configuration = $configuration;
     if ($this->SkypRunMigrate)
@@ -88,7 +88,7 @@ class MigrationImportAutoBase {
     $plugin_id = 'wbhorizon_entites_auto';
     if (!empty($this->entityTypeId))
       $plugin_id = $plugin_id . '_' . $this->entityTypeId;
-    
+
     try {
       /**
        *
@@ -149,7 +149,7 @@ class MigrationImportAutoBase {
       return false;
     }
   }
-  
+
   /**
    * Les resultats d'une requetes peuvent avoir des contenus de types
    * differents.
@@ -158,35 +158,37 @@ class MigrationImportAutoBase {
     $confRow = [];
     $results = [];
     $this->validationDatas();
-    foreach ($this->rawDatas['data'] as $k => $row) {
-      $confRow[$k] = $configuration;
-      $entityId = $k;
-      // Get id contenu.
-      $idKey = array_key_first($configuration['source']['ids']);
-      if (!empty($row['attributes'][$idKey]))
-        $entityId = $row['attributes'][$idKey];
-      // ignore existant datas.
-      if ($this->ignoreExistantData) {
-        $entity = \Drupal::entityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
-        if ($entity) {
-          // \Drupal::messenger()->addStatus(' Ignore : ' . $entityId . ' => ' .
-          // $entityId, true);
-          continue;
+    if (!empty($this->rawDatas['data']))
+      foreach ($this->rawDatas['data'] as $k => $row) {
+        $confRow[$k] = $configuration;
+        $entityId = $k;
+        // Get id contenu.
+        $idKey = array_key_first($configuration['source']['ids']);
+        if (!empty($row['attributes'][$idKey]))
+          $entityId = $row['attributes'][$idKey];
+        // ignore existant datas.
+        if ($this->ignoreExistantData) {
+          $entity = \Drupal::entityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
+          if ($entity) {
+            // \Drupal::messenger()->addStatus(' Ignore : ' . $entityId . ' => '
+            // .
+            // $entityId, true);
+            continue;
+          }
         }
+        //
+        $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
+        $this->buildMappingProcess($confRow[$k], $confRow[$k]['process']);
+        $results[$entityId] = $this->runMigrate($confRow[$k]);
+        $dbg = [
+          'conf' => $confRow[$k],
+          'result' => $results[$entityId]
+        ];
+        $this->addToLogs($dbg, $entityId);
       }
-      //
-      $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
-      $this->buildMappingProcess($confRow[$k], $confRow[$k]['process']);
-      $results[$entityId] = $this->runMigrate($confRow[$k]);
-      $dbg = [
-        'conf' => $confRow[$k],
-        'result' => $results[$entityId]
-      ];
-      $this->addToLogs($dbg, $entityId);
-    }
     return $results;
   }
-  
+
   /**
    * recupere la configuration encours.
    */
@@ -204,7 +206,7 @@ class MigrationImportAutoBase {
     }
     return $this->domaineId;
   }
-  
+
   /**
    * Permet de recuperer les données à partir de l'url;
    */
@@ -225,7 +227,7 @@ class MigrationImportAutoBase {
         'password' => static::$configImport['password']
       ]
     ];
-    
+
     /**
      *
      * @var \Drupal\migrationwbh\Plugin\migrate_plus\data_parser\JsonApi $json_api
@@ -233,7 +235,7 @@ class MigrationImportAutoBase {
     $json_api = $this->DataParserPluginManager->createInstance('json_api', $conf);
     $this->rawDatas = $json_api->getDataByExternalApi($url);
   }
-  
+
   protected function performRawDatas() {
     if (!empty($this->rawDatas['data']) && empty($this->rawDatas['data'][0])) {
       $temp = $this->rawDatas['data'];
@@ -241,14 +243,14 @@ class MigrationImportAutoBase {
       $this->rawDatas['data'][0] = $temp;
     }
   }
-  
+
   /**
    * Base de validation.
    */
   protected function validationDatas() {
     //
   }
-  
+
   /**
    * Pour importer les contenus en relation.
    */
@@ -308,29 +310,29 @@ class MigrationImportAutoBase {
       $this->addToLogs($dbg, $fieldName);
     }
   }
-  
+
   protected function getConfigImport() {
     if (!static::$configImport) {
       static::$configImport = \Drupal::config('migrationwbh.import')->getRawData();
     }
   }
-  
+
   public function getDebugLog() {
     return $this->debugLog;
   }
-  
+
   public function getRawDatas() {
     return $this->rawDatas;
   }
-  
+
   public function getConfiguration() {
     return $this->configuration;
   }
-  
+
   public function getFieldData() {
     return $this->fieldData;
   }
-  
+
   /**
    * Permet de regenerer le rendu.
    *
@@ -339,7 +341,7 @@ class MigrationImportAutoBase {
   public function setRollback($val = true) {
     $this->rollback = $val;
   }
-  
+
   /**
    *
    * @param boolean $val
@@ -347,37 +349,37 @@ class MigrationImportAutoBase {
   public function setImport($val = true) {
     $this->import = $val;
   }
-  
+
   protected function addToLogs($data, $key = null) {
     if ($key)
       static::$logs[$key][] = $data;
     else
       static::$logs[] = $data;
   }
-  
+
   protected function addDebugLogs($data, $key = null) {
     if ($key)
       static::$logs['debug'][$key][] = $data;
     else
       static::$logs['debug'][] = $data;
   }
-  
+
   public function getLogs() {
     return static::$logs;
   }
-  
+
   public function getEntityTypeId() {
     return $this->entityTypeId;
   }
-  
+
   public function activeIgnoreData() {
     $this->setIgnoreDatas(true);
   }
-  
+
   public function setIgnoreDatas($value) {
     $this->ignoreExistantData = $value;
   }
-  
+
   /**
    * Drupal pour le moment a opter de ne pas exposer les données de layouts
    * builder, car ce dernier utilise le format json et un ya quelques probleme
@@ -400,5 +402,5 @@ class MigrationImportAutoBase {
       }
     }
   }
-  
+
 }

@@ -7,7 +7,6 @@ use Drupal\migrate_plus\DataParserPluginManager;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity\File;
-use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 
@@ -69,7 +68,6 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-
     return $this->loopDatas($configuration);
   }
 
@@ -120,6 +118,8 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
+    if (empty($this->rawDatas['data']))
+      return true;
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__store_id'])) {
       return true;
     }
@@ -128,7 +128,7 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
       ];
-      throw DebugCode::exception('validationDatas', $dbg);
+      throw DebugCode::exception(' CommerceStore: format de donnée non valide ', $dbg);
     }
   }
 

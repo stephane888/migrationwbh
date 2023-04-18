@@ -95,6 +95,8 @@ class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
+    if (empty($this->rawDatas['data']))
+      return true;
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__currencyCode'])) {
       return true;
     }
@@ -103,7 +105,7 @@ class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
       ];
-      throw DebugCode::exception('validationDatas', $dbg);
+      throw DebugCode::exception(' CommerceCurrency: format de donnée non valide ', $dbg);
     }
   }
 

@@ -29,7 +29,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-  
+
   /**
    * les champs qui serront ignorées dans le mapping.
    *
@@ -40,19 +40,19 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
   ];
   private $unGetRelationships = [];
   private $SkypRunMigrate = false;
-  
+
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
   }
-  
+
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
     $this->getConfigImport();
-    
+
     /**
      * --
      *
@@ -76,7 +76,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
     $results = $this->loopDatas($configuration);
     return $results;
   }
-  
+
   /**
    * Permet de construire,
    *
@@ -94,7 +94,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       // ( en attendant, on importe tous les paragraphes ).
     }
   }
-  
+
   /**
    *
    * @param
@@ -114,7 +114,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       }
     }
   }
-  
+
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -132,18 +132,18 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
       ];
-      throw DebugCode::exception('validationDatas', $dbg);
+      throw DebugCode::exception('Block: format de donnée non valide ', $dbg);
     }
   }
-  
+
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-  
+
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
+
 }

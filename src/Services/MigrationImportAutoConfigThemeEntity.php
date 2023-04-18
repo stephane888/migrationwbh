@@ -121,7 +121,7 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
       ];
-      throw DebugCode::exception('validationDatas', $dbg);
+      throw DebugCode::exception(' AutoConfigThemeEntity: format de donnée non valide ', $dbg);
     }
   }
 
