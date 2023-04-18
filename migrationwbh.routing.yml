@@ -34,7 +34,7 @@ migrationwbh.runimport:
 migrationwbh.runimportform:
   path: '/admin/config/services/migrationwbh-import-form'
   defaults:
-    _title: 'Importer votre site v2'
+    _title: 'Importer un site'
     _form: 'Drupal\migrationwbh\Form\MigrationWbhImport'
   requirements:
     _permission: 'administer migrationwbh configuration'
