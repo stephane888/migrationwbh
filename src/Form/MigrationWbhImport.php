@@ -177,7 +177,10 @@ class MigrationWbhImport extends ConfigFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Votre domaine sur wh-horizon.com'),
       '#default_value' => $config['external_domain'],
-      '#description' => 'Votre domaine au format complet: example => http://mark-business.wh-hozizon.com '
+      '#description' => 'Votre domaine au format complet: example => http://mark-business.wh-hozizon.com ',
+      '#element_validate' => [
+        '::text_identification'
+      ]
     ];
     $this->addLanguage();
     //
@@ -231,6 +234,14 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->disabledPreprocessCss();
     $this->disabledBlocks();
     $this->actionButtons($form, $form_state);
+  }
+  
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    //
+  }
+  
+  public function text_identification($element, FormStateInterface $form_state) {
+    //
   }
   
   /**
@@ -422,12 +433,30 @@ class MigrationWbhImport extends ConfigFormBase {
       $editConfig->save();
     }
     //
-    $form_state->setRedirect('migrationwbh.runimportform', [], [
-      'query' => [
-        'step' => $nextStep
-      ]
-    ]);
-    // $form_state->setRebuild();
+    try {
+      $pluginId = [
+        'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
+      ];
+      $instances = $this->MigrationImport->listMigrateInstance([
+        'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
+      ]);
+      foreach ($this->MigrationImport->listMigrate($pluginId) as $key => $Migration) {
+        /** @var \Drupal\migrate\Plugin\Migration $Migration */
+        $Migration = $instances[$key];
+        $source = $Migration->getSourcePlugin();
+        $source->count();
+      }
+      //
+      $form_state->setRedirect('migrationwbh.runimportform', [], [
+        'query' => [
+          'step' => $nextStep
+        ]
+      ]);
+    }
+    catch (\Exception $e) {
+      // form_error($element, t('You mus enter a valid colour.'));
+      $this->messenger()->addWarning("Echec de connexion au serveur distant.");
+    }
   }
   
   /**
