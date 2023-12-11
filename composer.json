@@ -1,18 +1,18 @@
 {
-    "name": "stephane888/migrationwbh",
-    "description": "permet d'exporter les données d'un environ drupal vers un autre",
-    "type": "drupal-module-custom",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "stephane888",
-            "email": "kksasteph888@gmail.com"
-        }
-    ],
-    "minimum-stability": "stable",
-    "require": {
-    	"drupal/migrate_plus": "^6.0",
-    	"drupal/migrate_tools": "^6.0",
-    	"drupal/migrate_file": "^2.1"
+  "name": "stephane888/migrationwbh",
+  "description": "permet d'exporter les données d'un environ drupal vers un autre",
+  "type": "drupal-custom-module",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "stephane888",
+      "email": "kksasteph888@gmail.com"
     }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "drupal/migrate_plus": "^6.0",
+    "drupal/migrate_tools": "^6.0",
+    "drupal/migrate_file": "^2.1"
+  }
 }
