@@ -13,6 +13,7 @@
   "require": {
     "drupal/migrate_plus": "^6.0",
     "drupal/migrate_tools": "^6.0",
-    "drupal/migrate_file": "^2.1"
+    "drupal/migrate_file": "^2.1",
+    "drupal/migrate_upgrade": "^4.0"
   }
 }

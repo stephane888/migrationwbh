@@ -4,6 +4,8 @@ description: The description.
 package: Custom
 core_version_requirement: ^9 || ^10
 dependencies:
-  - migrate_plus
-  - migrate_tools
-  - migrate_file
+  - drupal:language
+  - migrate_plus:migrate_plus
+  - migrate_tools:migrate_tools
+  - migrate_file:migrate_file
+  - migrate_upgrade:migrate_upgrade

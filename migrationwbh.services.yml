@@ -1,10 +1,4 @@
-services:
-  migrationwbh.event_subscriber:
-    class: Drupal\migrationwbh\EventSubscriber\MigrationwbhSubscriber
-    arguments: ['@messenger']
-    tags:
-      - { name: event_subscriber }
-      
+services:      
   migrationwbh.migrate_import:
     class: Drupal\migrationwbh\Services\MigrationImport
     arguments: ['@plugin.manager.migration']
