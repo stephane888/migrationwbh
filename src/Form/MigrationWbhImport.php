@@ -16,6 +16,7 @@ use Drupal\migrationwbh\Services\MigrationImportAutoCommerceProduct;
 // use Drupal\layoutgenentitystyles\Services\LayoutgenentitystylesServices;
 use Drupal\Core\Render\Renderer;
 use Stephane888\Debug\debugLog;
+use Stephane888\Debug\ExceptionExtractMessage;
 use Drupal\generate_style_theme\Services\GenerateStyleTheme;
 use Drupal\Core\Url;
 use Drupal\Component\Serialization\Json;
@@ -454,7 +455,7 @@ class MigrationWbhImport extends ConfigFormBase {
       ]);
     }
     catch (\Exception $e) {
-      // form_error($element, t('You mus enter a valid colour.'));
+      $this->logger('migrationwbh')->alert($e->getMessage(), ExceptionExtractMessage::errorAll($e));
       $this->messenger()->addWarning("Echec de connexion au serveur distant.");
     }
   }
