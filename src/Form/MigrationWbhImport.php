@@ -7,26 +7,19 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrationwbh\Services\MigrationImport;
-use Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity;
-use Drupal\migrationwbh\Services\MigrationImportAutoBlockContent;
-use Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity;
 use Drupal\migrationwbh\Services\MigrationImportAutoBlock;
-use Drupal\migrationwbh\Services\MigrationImportAutoParagraph;
-use Drupal\migrationwbh\Services\MigrationImportAutoCommerceProduct;
-// use Drupal\layoutgenentitystyles\Services\LayoutgenentitystylesServices;
 use Drupal\Core\Render\Renderer;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionExtractMessage;
-use Drupal\generate_style_theme\Services\GenerateStyleTheme;
-use Drupal\Core\Url;
 use Drupal\Component\Serialization\Json;
-use Stephane888\Debug\Repositories\ConfigDrupal;
 use Drupal\migrate\MigrateException;
 
 /**
  * Configure migrationwbh settings for this site.
  */
 class MigrationWbhImport extends ConfigFormBase {
+  use BatchImport;
+  use HelperToImport;
   protected static $keySettings = 'migrationwbh.import';
   /**
    *
@@ -61,41 +54,12 @@ class MigrationWbhImport extends ConfigFormBase {
     'wbhorizon_block_content_menu' => 'wbhorizon_block_content_menu',
     'wbhorizon_block_content_bp' => 'wbhorizon_block_content_bp'
   ];
-  /**
-   *
-   * @var MigrationImportAutoSiteInternetEntity
-   */
-  protected $MigrationImportAutoSiteInternetEntity;
   
   /**
    *
-   * @var MigrationImportAutoBlockContent
-   */
-  protected $MigrationImportAutoBlockContent;
-  
-  /**
-   *
-   * @var MigrationImportAutoConfigThemeEntity
-   */
-  protected $MigrationImportAutoConfigThemeEntity;
-  
-  /**
-   *
-   * @var MigrationImportAutoBlock
+   * @var \Drupal\migrationwbh\Services\MigrationImportAutoBlock
    */
   protected $MigrationImportAutoBlock;
-  
-  /**
-   *
-   * @var MigrationImportAutoParagraph
-   */
-  protected $MigrationImportAutoParagraph;
-  
-  /**
-   *
-   * @var MigrationImportAutoCommerceProduct
-   */
-  protected $MigrationImportAutoCommerceProduct;
   
   /**
    *
@@ -108,17 +72,11 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param ConfigFactoryInterface $config_factory
    * @param MigrationImport $MigrationImport
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoSiteInternetEntity $MigrationImportAutoSiteInternetEntity, MigrationImportAutoBlockContent $MigrationImportAutoBlockContent, MigrationImportAutoConfigThemeEntity $MigrationImportAutoConfigThemeEntity, MigrationImportAutoBlock $MigrationImportAutoBlock, MigrationImportAutoParagraph $MigrationImportAutoParagraph, MigrationImportAutoCommerceProduct $MigrationImportAutoCommerceProduct) {
+  public function __construct(ConfigFactoryInterface $config_factory, MigrationImport $MigrationImport, Renderer $Renderer, MigrationImportAutoBlock $MigrationImportAutoBlock) {
     parent::__construct($config_factory);
     $this->MigrationImport = $MigrationImport;
     $this->Renderer = $Renderer;
-    $this->MigrationImportAutoSiteInternetEntity = $MigrationImportAutoSiteInternetEntity;
-    $this->MigrationImportAutoBlockContent = $MigrationImportAutoBlockContent;
-    $this->MigrationImportAutoConfigThemeEntity = $MigrationImportAutoConfigThemeEntity;
     $this->MigrationImportAutoBlock = $MigrationImportAutoBlock;
-    // $this->LayoutgenentitystylesServices = $LayoutgenentitystylesServices;
-    $this->MigrationImportAutoParagraph = $MigrationImportAutoParagraph;
-    $this->MigrationImportAutoCommerceProduct = $MigrationImportAutoCommerceProduct;
   }
   
   /**
@@ -126,7 +84,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.site_internet_entity'), $container->get('migrationwbh.migrate_auto_import.block_content'), $container->get('migrationwbh.migrate_auto_import.config_theme_entity'), $container->get('migrationwbh.migrate_auto_import.block'), $container->get('migrationwbh.migrate_auto_import.paragraph'), $container->get('migrationwbh.migrate_auto_import.commerce_product'));
+    return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.block'));
   }
   
   /**
@@ -148,10 +106,10 @@ class MigrationWbhImport extends ConfigFormBase {
         case 3:
           $this->formState3($form, $form_state, $config);
         case 4:
-          $this->formState33($form, $form_state, $config);
+          $this->formState4($form, $form_state, $config);
           break;
         case 5:
-          $this->formState4($form, $form_state, $config);
+          $this->formState5($form, $form_state, $config);
           break;
         default:
           ;
@@ -228,12 +186,12 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param array $form
    * @param FormStateInterface $form_state
    */
-  protected function formState33(array &$form, FormStateInterface $form_state) {
+  protected function formState4(array &$form, FormStateInterface $form_state) {
     $this->assureThemeIsActive();
     $this->actionButtons($form, $form_state, "Importer les configurations et passer à l'etape finale", 'ImportNextSubmit2');
   }
   
-  protected function formState4(array &$form, FormStateInterface $form_state, $config) {
+  protected function formState5(array &$form, FormStateInterface $form_state, $config) {
     $form['info'] = [
       '#type' => 'html_tag',
       '#tag' => 'h2',
@@ -468,7 +426,7 @@ class MigrationWbhImport extends ConfigFormBase {
   }
   
   /**
-   * --
+   * Importation des données.
    *
    * @param array $form
    * @param FormStateInterface $form_state
@@ -482,53 +440,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $form_state->set('step', $nextStep);
     
     debugLog::$max_depth = 15;
-    // Import des pages web.
-    $urlPageWeb = trim($config['external_domain'], '/') . '/jsonapi/export/page-web';
-    $this->MigrationImportAutoSiteInternetEntity->setUrl($urlPageWeb);
-    // $this->MigrationImportAutoSiteInternetEntity->activeIgnoreData();
-    $this->MigrationImportAutoSiteInternetEntity->runImport();
-    $logs = $this->MigrationImportAutoSiteInternetEntity->getLogs();
-    if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true, "logs");
-    /**
-     * Import des block_content
-     */
-    $urlBlockContents = trim($config['external_domain'], '/') . '/jsonapi/export/block_content';
-    $this->MigrationImportAutoBlockContent->setUrl($urlBlockContents);
-    $this->MigrationImportAutoBlockContent->runImport();
-    $logs = $this->MigrationImportAutoBlockContent->getLogs();
-    if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true, "logs");
-    /**
-     * Import paragraph.
-     */
-    $urlParagraph = trim($config['external_domain'], '/') . '/jsonapi/export/paragraph';
-    $this->MigrationImportAutoParagraph->setUrl($urlParagraph);
-    $this->MigrationImportAutoParagraph->activeIgnoreData();
-    $this->MigrationImportAutoParagraph->runImport();
-    $logs = $this->MigrationImportAutoParagraph->getLogs();
-    if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Paragraph', true, "logs");
-    /**
-     * Import des produits.
-     */
-    $urlCommerceProduct = trim($config['external_domain'], '/') . '/jsonapi/export/commerce_product';
-    $this->MigrationImportAutoCommerceProduct->setUrl($urlCommerceProduct);
-    $this->MigrationImportAutoCommerceProduct->runImport();
-    $this->MigrationImportAutoCommerceProduct->activeIgnoreData();
-    $logs = $this->MigrationImportAutoCommerceProduct->getLogs();
-    if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__commerce_product', true, "logs");
-    /**
-     * Import du theme.
-     */
-    $urlConfigThemeEntity = trim($config['external_domain'], '/') . '/jsonapi/export/template-theme';
-    $this->MigrationImportAutoConfigThemeEntity->setUrl($urlConfigThemeEntity);
-    $this->MigrationImportAutoConfigThemeEntity->runImport();
-    $logs = $this->MigrationImportAutoConfigThemeEntity->getLogs();
-    if ($logs)
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true, "logs");
-    
+    $this->runBatch($config);
     // Import des nodes.
     // ***
     $form_state->setRedirect('migrationwbh.runimportform', [], [
@@ -536,7 +448,6 @@ class MigrationWbhImport extends ConfigFormBase {
         'step' => $nextStep
       ]
     ]);
-    // $form_state->setRebuild();
   }
   
   /**
@@ -579,188 +490,6 @@ class MigrationWbhImport extends ConfigFormBase {
         'step' => $pvStep
       ]
     ]);
-  }
-  
-  /**
-   * On doit desactiver l'utilisation du domaine pour la configuration des
-   * themes.
-   */
-  protected function disableUseDomainConfig() {
-    $key = "generate_style_theme.settings";
-    $config = \Drupal::config($key)->getRawData();
-    if (!empty($config['tab1']['use_domain'])) {
-      $configEit = \Drupal::service('config.factory')->getEditable($key);
-      $configEit->set('tab1.use_domain', 0);
-      $configEit->save();
-    }
-  }
-  
-  /**
-   * Permet de creer un domaine si aucun n'existe.
-   */
-  protected function createDomain() {
-    $domains = \Drupal::entityTypeManager()->getStorage('domain')->loadMultiple();
-    if (empty($domains)) {
-      $values = [
-        'hostname' => $_SERVER['HTTP_HOST'],
-        'name' => $_SERVER['HTTP_HOST'],
-        'id' => preg_replace('/[^a-z0-9]/', "_", $_SERVER['HTTP_HOST']),
-        'is_default' => true
-      ];
-      $domain = \Drupal::entityTypeManager()->getStorage('domain')->create($values);
-      $domain->save();
-    }
-  }
-  
-  protected function assureThemeIsActive() {
-    $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadMultiple();
-    // comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
-    if (!empty($config_theme_entities)) {
-      $old_config_theme_entity = null;
-      foreach ($config_theme_entities as $config_theme_entity) {
-        /**
-         *
-         * @var \Drupal\generate_style_theme\Entity\ConfigThemeEntity $config_theme_entity
-         */
-        if (str_contains($config_theme_entity->getHostname(), '_wb_horizon_')) {
-          $old_config_theme_entity = $config_theme_entity;
-          // dump($config_theme_entity);
-        }
-      }
-      $conf = \Drupal::config("system.theme")->getRawData();
-      if ($conf['default'] != $old_config_theme_entity->getHostname()) {
-        $old_config_theme_entity->save();
-        $this->messenger()->addStatus("Le theme a été MAJ ");
-      }
-    }
-  }
-  
-  protected function addLanguage() {
-    $en = \Drupal\language\Entity\ConfigurableLanguage::load('en');
-    if (empty($en)) {
-      $language = \Drupal\language\Entity\ConfigurableLanguage::createFromLangcode('en');
-      $language->save();
-    }
-  }
-  
-  protected function disabledPreprocessCss() {
-    $key = "system.performance";
-    $conf = \Drupal::config($key)->getRawData();
-    if ($conf['css']['preprocess']) {
-      $configEit = \Drupal::service('config.factory')->getEditable($key);
-      $configEit->set('css.preprocess', false);
-      $configEit->set('js.preprocess', false);
-      $configEit->save();
-    }
-  }
-  
-  /**
-   * On desactive certains blocs
-   */
-  protected function disabledBlocks() {
-    $config_theme_entity = $this->getOldTheme();
-    if ($config_theme_entity) {
-      $themeName = $config_theme_entity->getHostname();
-      //
-      $block = \Drupal::entityTypeManager()->getStorage('block')->load($themeName . '_page_title');
-      if ($block) {
-        $block->set('status', false);
-        $block->save();
-      }
-      //
-      $block = \Drupal::entityTypeManager()->getStorage('block')->load($themeName . '_breamcrumb');
-      if ($block) {
-        $block->set('status', false);
-        $block->save();
-      }
-    }
-  }
-  
-  /**
-   *
-   * @return void|\Drupal\generate_style_theme\Entity\ConfigThemeEntity
-   */
-  protected function getOldTheme() {
-    $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadMultiple();
-    // comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
-    if (!empty($config_theme_entities)) {
-      foreach ($config_theme_entities as $config_theme_entity) {
-        /**
-         *
-         * @var \Drupal\generate_style_theme\Entity\ConfigThemeEntity $config_theme_entity
-         */
-        if (str_contains($config_theme_entity->getHostname(), '_wb_horizon_')) {
-          return $config_theme_entity;
-        }
-      }
-    }
-    return;
-  }
-  
-  /**
-   * Permet de creer/maj un theme en function du nouveau domaine et des
-   * informations de configuration de l'ancien domaine.
-   *
-   * @deprecated pas necessaire
-   */
-  protected function createNewTheme() {
-    $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadMultiple();
-    // comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
-    if (!empty($config_theme_entities)) {
-      $old_config_theme_entities = null;
-      foreach ($config_theme_entities as $config_theme_entity) {
-        /**
-         *
-         * @var \Drupal\generate_style_theme\Entity\ConfigThemeEntity $config_theme_entity
-         */
-        if (str_contains($config_theme_entity->getHostname(), '_wb_horizon_')) {
-          $old_config_theme_entities = $config_theme_entity;
-          // dump($config_theme_entity);
-        }
-      }
-      // On charge le theme.
-      $id = preg_replace('/[^a-z0-9]/', "_", $_SERVER['HTTP_HOST']);
-      $domain = \Drupal::entityTypeManager()->getStorage('domain')->load($id);
-      if ($domain && $old_config_theme_entities) {
-        // Si le nouveau theme n'existe pas on le cree :
-        $newTHemeExit = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
-          'hostname' => $id
-        ]);
-        if (empty($newTHemeExit)) {
-          $domain = $domain->toArray();
-          $newTheme = $old_config_theme_entities->createDuplicate();
-          $newTheme->set('hostname', $id);
-          $newTheme->save();
-          // On met à jours les id du theme au niveau des blocs.
-          // $this->updateBlock($id);
-        }
-        else {
-          // $newTheme = reset($newTHemeExit);
-          // $newTheme->save();
-          // $this->updateBlock($id);
-        }
-      }
-      else {
-        throw new \Exception(" Une erreur s'est produite ... ");
-      }
-    }
-  }
-  
-  /**
-   * Met à jour les configurations de blocs.
-   *
-   * @deprecated pas necessaire
-   */
-  protected function updateBlock($id) {
-    $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
-    foreach ($blocks as $block) {
-      // dump($block->toArray());
-      if (str_contains($block->get('theme'), '_wb_horizon_')) {
-        // $block->set('theme', $id);
-        // $block->save();
-        dump($block->toArray());
-      }
-    }
   }
   
 }
