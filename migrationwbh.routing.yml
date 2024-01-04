@@ -38,3 +38,12 @@ migrationwbh.runimportform:
     _form: 'Drupal\migrationwbh\Form\MigrationWbhImport'
   requirements:
     _permission: 'administer migrationwbh configuration'
+
+#Run import from Drupal 7.    
+migrationwbh.runimport_d7:
+  path: '/admin/config/services/migrationwbh-import-d7'
+  defaults:
+    _title: 'Importer votre site de Drupal 7'
+    _controller: '\Drupal\migrationwbh\Controller\MigrationwbhD7Controller::buildImportDemoD7'
+  requirements:
+    _permission: 'administer migrationwbh configuration'

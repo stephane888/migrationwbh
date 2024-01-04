@@ -30,3 +30,7 @@ services:
   migrationwbh.migrate_auto_import.block:
     class: Drupal\migrationwbh\Services\MigrationImportAutoBlock
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','block']
+  
+  migrationwbh.migrate_import_d7:
+    class: Drupal\migrationwbh\Services\D7\ManageImport
+    arguments: []

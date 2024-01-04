@@ -59,10 +59,6 @@ function migrationwbh_field_config_insert(FieldConfig $FieldConfig) {
             ];
             $file = File::create($values);
             $file->save();
-            \Stephane888\Debug\debugLog::SaveLogsDrupal([
-              'value' => $values,
-              'file' => $file->toArray()
-            ], $FieldConfig->id());
             /** @var \Drupal\file\FileUsage\FileUsageInterface $file_usage */
             $file_usage = \Drupal::service('file.usage');
             // Add usage of the new icon file.
