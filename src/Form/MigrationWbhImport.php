@@ -20,6 +20,7 @@ use Drupal\migrate\MigrateException;
 class MigrationWbhImport extends ConfigFormBase {
   use BatchImport;
   use HelperToImport;
+  use BatchImportConfig;
   protected static $keySettings = 'migrationwbh.import';
   /**
    *
@@ -157,8 +158,8 @@ class MigrationWbhImport extends ConfigFormBase {
   protected function formState2(array &$form, FormStateInterface $form_state) {
     try {
       // $this->getMigrationList($form);
-      // $this->createDomain();
-      // $this->disableUseDomainConfig();
+      $this->createDomain();
+      $this->disableUseDomainConfig();
       $this->actionButtons($form, $form_state, "Importer les contenus et passer à l'etape suivante", 'ImportNextSubmit');
     }
     catch (MigrateException $e) {

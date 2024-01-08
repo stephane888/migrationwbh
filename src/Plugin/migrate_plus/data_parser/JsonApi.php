@@ -134,12 +134,13 @@ class JsonApi extends Json {
     return null;
   }
   
-  private function getResourseBrute($url) {
+  public function getResourseBrute($url) {
     /**
      *
      * @var \Drupal\migrate_plus\Plugin\migrate_plus\data_fetcher\Http $http
      */
     $http = $this->getDataFetcherPlugin();
+    
     $response = $http->getResponseContent($url);
     $source_data = JsonDrupalApi::decode($response);
     return $source_data;

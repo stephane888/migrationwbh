@@ -180,6 +180,15 @@ class MigrationImportAutoBase {
   }
   
   /**
+   * Permet de determiner le nombre données.
+   */
+  public function CountAllData() {
+    if (!$this->fieldData && !$this->url)
+      throw new \ErrorException(' Vous devez definir fieldData ');
+    return $this->retrieveCountDatas();
+  }
+  
+  /**
    * Les resultats d'une requetes peuvent avoir des contenus de types
    * differents.
    */
@@ -209,7 +218,7 @@ class MigrationImportAutoBase {
         /**
          * Les paths posent un probleme sur commerce.
          * On opte dans un premier temps de les OFFs.
-         * Mais pour la suite, il faudra tenir compte.
+         * Mais pour la suite, il faudra en tenir compte.
          */
         if (!empty($row['attributes']['path'])) {
           $row['attributes']['path'] = [];
@@ -243,6 +252,35 @@ class MigrationImportAutoBase {
       }
     }
     return $this->domaineId;
+  }
+  
+  /**
+   * Permet de recuperer les données à partir de l'url;
+   */
+  protected function retrieveCountDatas() {
+    $this->getConfigImport();
+    if (!empty($this->fieldData))
+      $url = $this->fieldData['links']['related']['href'];
+    else
+      $url = $this->url;
+    $conf = [
+      'data_fetcher_plugin' => 'http',
+      'urls' => [
+        $url
+      ],
+      'authentication' => [
+        'plugin' => 'basic',
+        'username' => static::$configImport['username'],
+        'password' => static::$configImport['password']
+      ]
+    ];
+    
+    /**
+     *
+     * @var \Drupal\migrationwbh\Plugin\migrate_plus\data_parser\JsonApi $json_api
+     */
+    $json_api = $this->DataParserPluginManager->createInstance('json_api', $conf);
+    return (int) $json_api->getResourseBrute($url);
   }
   
   /**
