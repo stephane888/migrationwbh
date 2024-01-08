@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Drupal\migrationwbh\Plugin\migrate_plus\data_parser;
 
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
+use Drupal\Component\Serialization\Json as JsonDrupalApi;
 
 /**
  * Obtain JSON data for migration.
@@ -20,7 +21,7 @@ use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
  * )
  */
 class JsonApi extends Json {
-
+  
   /**
    * Recupere les données de /included et les ajoutées dans /data/relationships.
    * les données recuperer de /includesd => "links","attributes","relationships"
@@ -29,7 +30,7 @@ class JsonApi extends Json {
    *
    * @param string $url
    *        URL of a JSON feed.
-   *
+   *        
    * @throws \GuzzleHttp\Exception\RequestException
    */
   protected function getSourceData(string $url): array {
@@ -92,7 +93,7 @@ class JsonApi extends Json {
     // 'getSourceData-includes', true);
     return $source_data;
   }
-
+  
   /**
    * Objectif recuperer les urls des images de "included" et les ajouter au
    * champs
@@ -113,7 +114,7 @@ class JsonApi extends Json {
     }
     return null;
   }
-
+  
   /**
    * Pour les paragraphs il est important de savoir que les paragraphs peuvent
    * contenir des images, d'autres paragraphes.
@@ -132,23 +133,20 @@ class JsonApi extends Json {
     }
     return null;
   }
-
+  
   private function getResourseBrute($url) {
-    $response = $this->getDataFetcherPlugin()->getResponseContent($url);
-    // Convert objects to associative arrays.
-    $source_data = json_decode($response, TRUE, 512, JSON_THROW_ON_ERROR);
-
-    // If json_decode() has returned NULL, it might be that the data isn't
-    // valid utf8 - see http://php.net/manual/en/function.json-decode.php#86997.
-    if (is_null($source_data)) {
-      $utf8response = utf8_encode($response);
-      $source_data = json_decode($utf8response, TRUE, 512, JSON_THROW_ON_ERROR);
-    }
+    /**
+     *
+     * @var \Drupal\migrate_plus\Plugin\migrate_plus\data_fetcher\Http $http
+     */
+    $http = $this->getDataFetcherPlugin();
+    $response = $http->getResponseContent($url);
+    $source_data = JsonDrupalApi::decode($response);
     return $source_data;
   }
-
+  
   public function getDataByExternalApi(string $url) {
     return $this->getSourceData($url);
   }
-
+  
 }

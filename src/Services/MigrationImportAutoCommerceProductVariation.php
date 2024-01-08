@@ -12,12 +12,12 @@ use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 
 class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBase {
-
+  
   /**
    * disponible pour des entités avec bundles.
    */
   protected $bundle = null;
-
+  
   /**
    * les champs qui serront ignorées dans le mapping.
    * * Les colonnes avec les dates posent probleme. ( il faudra pouvoir les
@@ -34,14 +34,14 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
     "product_id",
     'uid'
   ];
-
+  
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
   }
-
+  
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ou une url ');
@@ -67,10 +67,10 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
       ],
       'process' => []
     ];
-
+    
     return $this->loopDatas($configuration);
   }
-
+  
   /**
    * Permet de construire,
    *
@@ -89,7 +89,7 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
       $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
   }
-
+  
   /**
    *
    * @param
@@ -109,7 +109,7 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
       }
     }
   }
-
+  
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -118,6 +118,7 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
    * @return boolean
    */
   protected function validationDatas() {
+    $this->performRawDatas();
     if (empty($this->rawDatas['data']))
       return true;
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__variation_id'])) {
@@ -131,19 +132,19 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
       throw DebugCode::exception(' CommerceProductVariation: format de donnée non valide ', $dbg);
     }
   }
-
+  
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
     elseif ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-
+  
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-
+  
 }

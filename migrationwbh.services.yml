@@ -14,11 +14,19 @@ services:
   migrationwbh.migrate_auto_import.paragraph:
     class: Drupal\migrationwbh\Services\MigrationImportAutoParagraph
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','paragraph','']
+  
+  migrationwbh.migrate_auto_import.node:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoNode
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','node','']
     
   migrationwbh.migrate_auto_import.commerce_product:
     class: Drupal\migrationwbh\Services\MigrationImportAutoCommerceProduct
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','commerce_product','']
-    
+  
+  migrationwbh.migrate_auto_import.blocks_contents:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoBlocksContents
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','blocks_contents','']
+   
   migrationwbh.migrate_auto_import.block_content:
     class: Drupal\migrationwbh\Services\MigrationImportAutoBlockContent
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','block_content','']

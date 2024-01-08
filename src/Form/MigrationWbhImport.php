@@ -156,17 +156,29 @@ class MigrationWbhImport extends ConfigFormBase {
    */
   protected function formState2(array &$form, FormStateInterface $form_state) {
     try {
-      $this->getMigrationList($form);
-      $this->createDomain();
-      $this->disableUseDomainConfig();
+      // $this->getMigrationList($form);
+      // $this->createDomain();
+      // $this->disableUseDomainConfig();
       $this->actionButtons($form, $form_state, "Importer les contenus et passer à l'etape suivante", 'ImportNextSubmit');
     }
     catch (MigrateException $e) {
+      $this->messenger()->addError("Une erreur s'est produite, vieillez contactez l'administrateur");
+      $this->messenger()->addError($e->getMessage());
       $this->logger('migrationwbh')->alert($e->getMessage(), ExceptionExtractMessage::errorAll($e));
     }
     catch (\Error $e) {
+      $this->messenger()->addError("Une erreur s'est produite, vieillez contactez l'administrateur");
+      $this->messenger()->addError($e->getMessage());
       $this->logger('migrationwbh')->alert($e->getMessage(), ExceptionExtractMessage::errorAll($e));
     }
+  }
+  
+  protected function testImport() {
+    $config = $this->config(static::$keySettings)->getRawData();
+    // $external_domain = $config['external_domain'];
+    // $context = [];
+    // self::_batch_import_blocks_contents($external_domain, $context);
+    $this->runBatch($config);
   }
   
   /**
@@ -391,7 +403,7 @@ class MigrationWbhImport extends ConfigFormBase {
     //
     try {
       // Mise à jour des configurations.
-      $externalConf = Json::decode(file_get_contents(trim($config->get('external_domain'), '/') . '/export-import-entities/show-site-config'));
+      $externalConf = Json::decode(file_get_contents(trim($config->get('external_domain'), '/') . '/export-entities-wbhorizon/show-site-config'));
       $editConfig = \Drupal::configFactory()->getEditable('system.site');
       if (!empty($externalConf)) {
         if (!empty($externalConf['system.site']['langcode']))
@@ -400,18 +412,20 @@ class MigrationWbhImport extends ConfigFormBase {
           $editConfig->set('default_langcode', $externalConf['system.site']['default_langcode']);
         $editConfig->save();
       }
-      $pluginId = [
-        'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
-      ];
-      $instances = $this->MigrationImport->listMigrateInstance([
-        'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
-      ]);
-      foreach ($this->MigrationImport->listMigrate($pluginId) as $key => $Migration) {
-        /** @var \Drupal\migrate\Plugin\Migration $Migration */
-        $Migration = $instances[$key];
-        $source = $Migration->getSourcePlugin();
-        $source->count();
-      }
+      // Utilité à revoir.
+      // $pluginId = [
+      // 'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
+      // ];
+      // $instances = $this->MigrationImport->listMigrateInstance([
+      // 'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
+      // ]);
+      // foreach ($this->MigrationImport->listMigrate($pluginId) as $key =>
+      // $Migration) {
+      // /** @var \Drupal\migrate\Plugin\Migration $Migration */
+      // $Migration = $instances[$key];
+      // $source = $Migration->getSourcePlugin();
+      // $source->count();
+      // }
       //
       $form_state->setRedirect('migrationwbh.runimportform', [], [
         'query' => [
@@ -457,7 +471,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param FormStateInterface $form_state
    */
   public function ImportNextSubmit2(array &$form, FormStateInterface $form_state) {
-    $config = $this->config(static::$keySettings)->getRawData();
+    // $config = $this->config(static::$keySettings)->getRawData();
     // $nextStep = $form_state->get('step') + 1;
     $nextStep = !empty($_GET['step']) ? $_GET['step'] + 1 : 1;
     if ($nextStep > $this->maxStep)
@@ -465,11 +479,13 @@ class MigrationWbhImport extends ConfigFormBase {
     $form_state->set('step', $nextStep);
     
     // Import des blocks.
-    $urlBlock = trim($config['external_domain'], '/') . '/jsonapi/export/block';
-    $this->MigrationImportAutoBlock->setUrl($urlBlock);
-    $this->MigrationImportAutoBlock->runImport();
-    debugLog::$max_depth = 15;
-    debugLog::kintDebugDrupal($this->MigrationImportAutoBlock->getLogs(), 'ImportNextSubmit__Block', true, "logs");
+    // $urlBlock = trim($config['external_domain'], '/') .
+    // '/jsonapi/export/block';
+    // $this->MigrationImportAutoBlock->setUrl($urlBlock);
+    // $this->MigrationImportAutoBlock->runImport();
+    // debugLog::$max_depth = 15;
+    // debugLog::kintDebugDrupal($this->MigrationImportAutoBlock->getLogs(),
+    // 'ImportNextSubmit__Block', true, "logs");
     //
     // ***
     $form_state->setRedirect('migrationwbh.runimportform', [], [
