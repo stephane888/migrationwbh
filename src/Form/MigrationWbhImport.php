@@ -21,7 +21,7 @@ class MigrationWbhImport extends ConfigFormBase {
   use BatchImport;
   use HelperToImport;
   use BatchImportConfig;
-  protected static $keySettings = 'migrationwbh.import';
+  
   /**
    *
    * @var \Drupal\migrationwbh\Services\MigrationImport
@@ -112,9 +112,6 @@ class MigrationWbhImport extends ConfigFormBase {
         case 5:
           $this->formState5($form, $form_state, $config);
           break;
-        default:
-          ;
-          break;
       }
     }
     else {
@@ -144,8 +141,19 @@ class MigrationWbhImport extends ConfigFormBase {
         '::text_identification'
       ]
     ];
+    $form['force_re_import'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Forcer à re-importer'),
+      '#description' => "Vous pouvez forcer les contenus a etre re-importer. ( Cela augmente le temps d'import )",
+      '#default_value' => isset($config['force_re_import']) ? $config['force_re_import'] : false
+    ];
+    $form['number_import'] = [
+      '#type' => 'number',
+      '#title' => $this->t('Nombre de contenu a importer par etape'),
+      '#description' => "Si vous le temps d'execution sur votre serveur est elevé, vous pouvez augemnter la valeur",
+      '#default_value' => isset($config['number_import']) ? $config['number_import'] : 3
+    ];
     $this->addLanguage();
-    
     //
     $this->actionButtons($form, $form_state, "Suivant", "saveConfigNext");
   }
@@ -174,12 +182,18 @@ class MigrationWbhImport extends ConfigFormBase {
     }
   }
   
+  /**
+   * Permet de faire de tests d'import.
+   */
   protected function testImport() {
     $config = $this->config(static::$keySettings)->getRawData();
-    // $external_domain = $config['external_domain'];
-    // $context = [];
-    // self::_batch_import_blocks_contents($external_domain, $context);
-    $this->runBatch($config);
+    $external_domain = $config['external_domain'];
+    $context = [];
+    $offset = 0;
+    $limit = 5;
+    $progress = 0;
+    self::_batch_import_config_theme_entity($external_domain, $offset, $limit, $progress, $context);
+    // $this->runBatch($config);
   }
   
   /**
@@ -220,7 +234,6 @@ class MigrationWbhImport extends ConfigFormBase {
   }
   
   public function text_identification($element, FormStateInterface $form_state) {
-    //
   }
   
   /**
@@ -398,45 +411,36 @@ class MigrationWbhImport extends ConfigFormBase {
     $config = $this->config(static::$keySettings);
     $config->set('username', $form_state->getValue('username'));
     $config->set('external_domain', $form_state->getValue('external_domain'));
+    $config->set('force_re_import', $form_state->getValue('force_re_import'));
+    $config->set('number_import', $form_state->getValue('number_import'));
     if (!empty($form_state->getValue('password')))
       $config->set('password', $form_state->getValue('password'));
     $config->save();
     //
     try {
-      // Mise à jour des configurations.
-      $externalConf = Json::decode(file_get_contents(trim($config->get('external_domain'), '/') . '/export-entities-wbhorizon/show-site-config'));
-      $editConfig = \Drupal::configFactory()->getEditable('system.site');
-      if (!empty($externalConf)) {
-        if (!empty($externalConf['system.site']['langcode']))
-          $editConfig->set('langcode', $externalConf['system.site']['langcode']);
-        if (!empty($externalConf['system.site']['default_langcode']))
-          $editConfig->set('default_langcode', $externalConf['system.site']['default_langcode']);
-        $editConfig->save();
+      // Permet de tester la connexion au serveur.
+      if (self::checkConnexionFrom($form_state->getValue('external_domain'))) {
+        // Mise à jour des configurations.
+        $externalConf = Json::decode(file_get_contents(trim($config->get('external_domain'), '/') . '/export-entities-wbhorizon/show-site-config'));
+        $editConfig = \Drupal::configFactory()->getEditable('system.site');
+        if (!empty($externalConf)) {
+          if (!empty($externalConf['system.site']['langcode']))
+            $editConfig->set('langcode', $externalConf['system.site']['langcode']);
+          if (!empty($externalConf['system.site']['default_langcode']))
+            $editConfig->set('default_langcode', $externalConf['system.site']['default_langcode']);
+          $editConfig->save();
+        }
+        $form_state->setRedirect('migrationwbh.runimportform', [], [
+          'query' => [
+            'step' => $nextStep
+          ]
+        ]);
       }
-      // Utilité à revoir.
-      // $pluginId = [
-      // 'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
-      // ];
-      // $instances = $this->MigrationImport->listMigrateInstance([
-      // 'wbhorizon_config_theme_entity' => 'wbhorizon_config_theme_entity'
-      // ]);
-      // foreach ($this->MigrationImport->listMigrate($pluginId) as $key =>
-      // $Migration) {
-      // /** @var \Drupal\migrate\Plugin\Migration $Migration */
-      // $Migration = $instances[$key];
-      // $source = $Migration->getSourcePlugin();
-      // $source->count();
-      // }
-      //
-      $form_state->setRedirect('migrationwbh.runimportform', [], [
-        'query' => [
-          'step' => $nextStep
-        ]
-      ]);
+      else
+        $this->messenger()->addError("Echec de connexion au serveur distant.");
     }
     catch (\Error $e) {
-      $this->logger('migrationwbh')->alert($e->getMessage(), ExceptionExtractMessage::errorAll($e));
-      $this->messenger()->addWarning("Echec de connexion au serveur distant.");
+      $this->messenger()->addWarning($e->getMessage());
     }
   }
   

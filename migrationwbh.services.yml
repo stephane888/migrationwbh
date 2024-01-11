@@ -34,6 +34,10 @@ services:
   migrationwbh.migrate_auto_import.config_theme_entity:
     class: Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity
     arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','config_theme_entity']
+  
+  migrationwbh.migrate_auto_import.menu_link_content:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoMenuLinkContent
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','menu_link_content','']
     
   migrationwbh.migrate_auto_import.block:
     class: Drupal\migrationwbh\Services\MigrationImportAutoBlock

@@ -209,12 +209,10 @@ class MigrationImportAutoBase {
         if ($this->ignoreExistantData) {
           $entity = \Drupal::entityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
           if ($entity) {
-            // \Drupal::messenger()->addStatus(' Ignore : ' . $entityId . ' => '
-            // .
-            // $entityId, true);
             continue;
           }
         }
+        
         /**
          * Les paths posent un probleme sur commerce.
          * On opte dans un premier temps de les OFFs.
@@ -223,7 +221,6 @@ class MigrationImportAutoBase {
         if (!empty($row['attributes']['path'])) {
           $row['attributes']['path'] = [];
         }
-        
         $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
         $this->buildMappingProcess($confRow[$k], $confRow[$k]['process']);
         $results[$entityId] = $this->runMigrate($confRow[$k]);
@@ -272,6 +269,9 @@ class MigrationImportAutoBase {
         'plugin' => 'basic',
         'username' => static::$configImport['username'],
         'password' => static::$configImport['password']
+      ],
+      'request_options' => [
+        'timeout' => 300
       ]
     ];
     

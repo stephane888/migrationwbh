@@ -99,14 +99,6 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
         if (!empty($data)) {
           $newUri = $filesystem->saveData($data, $row['attributes']['uri']['value']);
           $row['attributes']['uri']['value'] = $newUri;
-          // \Stephane888\Debug\debugLog::kintDebugDrupal([
-          // $url,
-          // static::$configImport,
-          // $newUri,
-          // 'attributes' => $row['attributes'],
-          // $row,
-          // 'file_info' => $file_info
-          // ], 'file__buildDataRows', true, "logs");
           // On va creer l'entité.
           $data_rows[0] = $row['attributes'];
         }
