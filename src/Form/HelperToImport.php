@@ -47,10 +47,11 @@ trait HelperToImport {
          */
         if (str_contains($config_theme_entity->getHostname(), '_wb_horizon_')) {
           $old_config_theme_entity = $config_theme_entity;
-          // dump($config_theme_entity);
+          break;
         }
       }
       $conf = \Drupal::config("system.theme")->getRawData();
+      
       if ($conf['default'] != $old_config_theme_entity->getHostname()) {
         $old_config_theme_entity->save();
         $this->messenger()->addStatus("Le theme a été MAJ ");

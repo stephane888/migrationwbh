@@ -70,11 +70,11 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
   }
   
   /**
-   * Permet de construire,
    *
-   * @param array $configuration
+   * {@inheritdoc}
+   * @see \Drupal\migrationwbh\Services\MigrationImportAutoBase::buildDataRows()
    */
-  protected function buildDataRows(array $row, array &$data_rows) {
+  public function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
     $this->getLayoutBuilderField($data_rows[$k]);

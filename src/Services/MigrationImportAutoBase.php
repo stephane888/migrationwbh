@@ -9,7 +9,7 @@ use Stephane888\Debug\ExceptionDebug as DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\layout_builder\Section;
 
-class MigrationImportAutoBase {
+class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   private $SkypRunMigrate = false;
   private $configuration;
   /**
@@ -341,6 +341,9 @@ class MigrationImportAutoBase {
    */
   protected function getRelationShip(array &$data_rows, $k, $fieldName, $value) {
     try {
+      // if ($fieldName == 'field_reference_menu') {
+      // dump($data_rows, $value);
+      // }
       $MigrationAutoImport = new MigrationAutoImport($this->MigrationPluginManager, $this->DataParserPluginManager);
       $MigrationAutoImport->setData($value);
       $MigrationAutoImport->rollback = $this->rollback;
@@ -362,6 +365,7 @@ class MigrationImportAutoBase {
           unset($value['data']['meta']["drupal_internal__target_id"]);
           $data_rows[$k][$fieldName] = $value['data']['meta'];
         }
+        
         // }
         // La recuperation des informations par defaut
         // else {
@@ -506,6 +510,14 @@ class MigrationImportAutoBase {
   
   public function setDebugMode(bool $value) {
     $this->debugMode = $value;
+  }
+  
+  /**
+   *
+   * {@inheritdoc}
+   * @see \Drupal\migrationwbh\Services\MigrationImportAutoBaseInterface::buildDataRows()
+   */
+  public function buildDataRows(array $row, array &$data_rows) {
   }
   
 }

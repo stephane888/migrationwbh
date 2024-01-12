@@ -12,7 +12,7 @@ use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 
 class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
-
+  
   /**
    * les champs qui serront ignorées dans le mapping.
    * * Les colonnes avec les dates posent probleme. ( il faudra pouvoir les
@@ -22,13 +22,13 @@ class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
    */
   private $unMappingFields = [];
   private $unGetRelationships = [];
-
+  
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
   }
-
+  
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ou une url ');
@@ -53,20 +53,20 @@ class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-
+    
     return $this->loopDatas($configuration);
   }
-
+  
   /**
-   * Permet de construire,
    *
-   * @param array $configuration
+   * {@inheritdoc}
+   * @see \Drupal\migrationwbh\Services\MigrationImportAutoBase::buildDataRows()
    */
-  protected function buildDataRows(array $row, array &$data_rows) {
+  public function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
   }
-
+  
   /**
    *
    * @param
@@ -86,7 +86,7 @@ class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
       }
     }
   }
-
+  
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -108,15 +108,15 @@ class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
       throw DebugCode::exception(' CommerceCurrency: format de donnée non valide ', $dbg);
     }
   }
-
+  
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-
+  
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-
+  
 }

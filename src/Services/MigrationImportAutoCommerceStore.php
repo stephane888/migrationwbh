@@ -11,12 +11,12 @@ use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 
 class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
-
+  
   /**
    * disponible pour des entités avec bundles.
    */
   protected $bundle = null;
-
+  
   /**
    * les champs qui seront ignorées dans le mapping.
    * * Les colonnes avec les dates posent probleme. ( il faudra pouvoir les
@@ -35,14 +35,14 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
     'revision_uid',
     'uid'
   ];
-
+  
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
   }
-
+  
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ou une url ');
@@ -70,13 +70,13 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
     ];
     return $this->loopDatas($configuration);
   }
-
+  
   /**
-   * Permet de construire,
    *
-   * @param array $configuration
+   * {@inheritdoc}
+   * @see \Drupal\migrationwbh\Services\MigrationImportAutoBase::buildDataRows()
    */
-  protected function buildDataRows(array $row, array &$data_rows) {
+  public function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
     // Set type
@@ -89,7 +89,7 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
       $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
   }
-
+  
   /**
    *
    * @param
@@ -109,7 +109,7 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
       }
     }
   }
-
+  
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -131,19 +131,19 @@ class MigrationImportAutoCommerceStore extends MigrationImportAutoBase {
       throw DebugCode::exception(' CommerceStore: format de donnée non valide ', $dbg);
     }
   }
-
+  
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
     elseif ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-
+  
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-
+  
 }

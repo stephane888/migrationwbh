@@ -78,11 +78,11 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
   }
   
   /**
-   * Permet de construire,
    *
-   * @param array $configuration
+   * {@inheritdoc}
+   * @see \Drupal\migrationwbh\Services\MigrationImportAutoBase::buildDataRows()
    */
-  protected function buildDataRows(array $row, array &$data_rows) {
+  public function buildDataRows(array $row, array &$data_rows) {
     // On recupere le fichier :
     $file = File::load($row['attributes']['drupal_internal__fid']);
     if (!$file) {

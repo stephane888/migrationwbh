@@ -9,7 +9,6 @@ use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\file\Entity\File;
-use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 use PhpParser\Node\Stmt\Static_;
@@ -30,12 +29,12 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-
+  
   /**
    * Disponible pour des entités avec bundles.
    */
   protected $bundle = null;
-
+  
   /**
    * les champs qui serront ignorées dans le mapping.
    *
@@ -53,14 +52,14 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
     "content_translation_uid"
   ];
   private $SkypRunMigrate = false;
-
+  
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
   }
-
+  
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
@@ -88,13 +87,13 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
     ];
     return $this->loopDatas($configuration);
   }
-
+  
   /**
-   * Permet de construire,
    *
-   * @param array $configuration
+   * {@inheritdoc}
+   * @see \Drupal\migrationwbh\Services\MigrationImportAutoBase::buildDataRows()
    */
-  protected function buildDataRows(array $row, array &$data_rows) {
+  public function buildDataRows(array $row, array &$data_rows) {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
     // Set type
@@ -107,7 +106,7 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
       $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
   }
-
+  
   /**
    *
    * @param
@@ -127,7 +126,7 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
       }
     }
   }
-
+  
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -136,6 +135,7 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
+    $this->performRawDatas();
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
       return true;
     }
@@ -147,19 +147,19 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
       throw DebugCode::exception('validationDatas', $dbg);
     }
   }
-
+  
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
     elseif ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-
+  
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-
+  
 }
