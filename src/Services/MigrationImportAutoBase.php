@@ -209,6 +209,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         if ($this->ignoreExistantData) {
           $entity = \Drupal::entityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
           if ($entity) {
+            $results[$entityId] = true;
             continue;
           }
         }
@@ -224,11 +225,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
         $this->buildMappingProcess($confRow[$k], $confRow[$k]['process']);
         $results[$entityId] = $this->runMigrate($confRow[$k]);
-        $dbg = [
-          'conf' => $confRow[$k],
-          'result' => $results[$entityId]
-        ];
-        $this->addToLogs($dbg, $entityId);
       }
     return $results;
   }

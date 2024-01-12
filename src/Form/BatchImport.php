@@ -126,6 +126,10 @@ trait BatchImport {
     self::getConfig();
     // Import des pages web.
     $url = trim($external_domain, '/') . "/jsonapi/export-entities-wbhorizon/site_internet_entity?page[offset]=$offset&page[limit]=$limit";
+    /**
+     *
+     * @var \Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity $MigrationImportEntities
+     */
     $MigrationImportEntities = self::loadPluginMigrate('migrationwbh.migrate_auto_import.site_internet_entity');
     $MigrationImportEntities->setDebugMode(self::$debugMode);
     $MigrationImportEntities->setUrl($url);
