@@ -135,7 +135,7 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
       ];
-      throw DebugCode::exception('validationDatas', $dbg);
+      throw DebugCode::exception('validationDatas error : ', $dbg);
     }
   }
   

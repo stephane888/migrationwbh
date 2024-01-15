@@ -108,7 +108,15 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     $plugin_id = 'wbhorizon_entites_auto';
     if (!empty($this->entityTypeId))
       $plugin_id = $plugin_id . '_' . $this->entityTypeId;
-    
+    // //
+    if ($this->entityTypeId == 'block') {
+      $db = [
+        $this->rollback,
+        $this->import,
+        'conf' => $this->configuration
+      ];
+    }
+    // //
     try {
       /**
        *
@@ -119,6 +127,9 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         throw DebugCode::exception(" Le plugin n'existe pas : " . $plugin_id, $plugin_id);
       }
       $migrate->getIdMap()->prepareUpdate();
+      if ($this->entityTypeId == 'block') {
+        $db['getMessages'] = $migrate->getIdMap()->getMessages();
+      }
       $executable = new MigrateExecutable($migrate, new MigrateMessage());
       //
       if ($this->rollback)
@@ -130,6 +141,9 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
           $migrate->setStatus(MigrationInterface::STATUS_IDLE);
           throw DebugCode::exception('runMigrate error : ' . $status, $executable->message);
         }
+      }
+      if ($this->entityTypeId == 'block') {
+        \Stephane888\Debug\debugLog::kintDebugDrupal($db, 'runMigrate', true);
       }
       return true;
     }
@@ -213,7 +227,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
             continue;
           }
         }
-        
         /**
          * Les paths posent un probleme sur commerce.
          * On opte dans un premier temps de les OFFs.

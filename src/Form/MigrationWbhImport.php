@@ -165,6 +165,7 @@ class MigrationWbhImport extends ConfigFormBase {
    */
   protected function formState2(array &$form, FormStateInterface $form_state) {
     try {
+      // $this->testImport();
       // $this->getMigrationList($form);
       $this->createDomain();
       $this->disableUseDomainConfig();
@@ -193,7 +194,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $limit = 1;
     $progress = 0;
     // self::$debugMode = true;
-    self::_batch_import_site_internet_entity($external_domain, $offset, $limit, $progress, $context);
+    self::_batch_import_block($external_domain, $offset, $limit, $progress, $context);
     // $this->runBatch($config);
   }
   

@@ -51,7 +51,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
     $this->retrieveDatas();
-    $this->getConfigImport();
+    $this->clearDatas();
     
     /**
      * --
@@ -74,7 +74,36 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       'process' => []
     ];
     $results = $this->loopDatas($configuration);
+    \Stephane888\Debug\debugLog::kintDebugDrupal($results, 'runImport', true);
     return $results;
+  }
+  
+  /**
+   * Actuelement, il ya des problemes de configurations des blocs.
+   * Les données importer contiennent des informations invalide.
+   * I.e on a des blocs qui ont des dependance de theme X mais qui demande un
+   * domaine Y.
+   * ( va etre supprimer une foix que les blocs seront ok.
+   */
+  protected function clearDatas() {
+    $newDatas = [];
+    \Stephane888\Debug\debugLog::$max_depth = 7;
+    \Stephane888\Debug\debugLog::$themeName = 'test851_wb_horizon_kksa';
+    \Stephane888\Debug\debugLog::kintDebugDrupal($this->rawDatas['data'], 'clearDatas_old', true);
+    if (!empty($this->rawDatas['data']) && !empty($this->rawDatas['data'][0])) {
+      foreach ($this->rawDatas['data'] as $value) {
+        $attributes = $value['attributes'];
+        $theme = $attributes['theme'];
+        if (empty($attributes['visibility'])) {
+          $newDatas[] = $value;
+        }
+        elseif (in_array($theme, $attributes['visibility']['domain']['domains'])) {
+          $newDatas[] = $value;
+        }
+      }
+      $this->rawDatas['data'] = $newDatas;
+    }
+    \Stephane888\Debug\debugLog::kintDebugDrupal($newDatas, 'clearDatas', true);
   }
   
   /**
