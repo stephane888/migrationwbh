@@ -65,6 +65,15 @@ trait BatchImport {
         $numberToImport
       ]
     ];
+    $batch['operations'][] = [
+      self::class . '::_batch_import_block',
+      [
+        $external_domain,
+        $offset,
+        $limit,
+        $numberToImport
+      ]
+    ];
     // dd($batch);
     batch_set($batch);
   }
