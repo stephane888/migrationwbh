@@ -74,7 +74,6 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       'process' => []
     ];
     $results = $this->loopDatas($configuration);
-    \Stephane888\Debug\debugLog::kintDebugDrupal($results, 'runImport', true);
     return $results;
   }
   
@@ -87,9 +86,7 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
    */
   protected function clearDatas() {
     $newDatas = [];
-    \Stephane888\Debug\debugLog::$max_depth = 7;
-    \Stephane888\Debug\debugLog::$themeName = 'test851_wb_horizon_kksa';
-    \Stephane888\Debug\debugLog::kintDebugDrupal($this->rawDatas['data'], 'clearDatas_old', true);
+    
     if (!empty($this->rawDatas['data']) && !empty($this->rawDatas['data'][0])) {
       foreach ($this->rawDatas['data'] as $value) {
         $attributes = $value['attributes'];
@@ -103,7 +100,6 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
       }
       $this->rawDatas['data'] = $newDatas;
     }
-    \Stephane888\Debug\debugLog::kintDebugDrupal($newDatas, 'clearDatas', true);
   }
   
   /**
