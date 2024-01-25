@@ -1,8 +1,5 @@
 <?php
 use Drupal\field\Entity\FieldConfig;
-use Drupal\Core\File\FileSystemInterface;
-use Drupal\file\FileInterface;
-use Drupal\file\Entity\File;
 
 /**
  *
@@ -13,61 +10,6 @@ use Drupal\file\Entity\File;
  * This file is no longer required in Drupal 8.
  * @see https://www.drupal.org/node/2217931
  */
-
-/**
- * Implement hook_ENTITY_TYPE_insert
- * permet de mettre à jour les images par defaut.
- */
-function migrationwbh_field_config_insert(FieldConfig $FieldConfig) {
-  if ($FieldConfig->get('field_type') == 'image') {
-    $settings = $FieldConfig->getSettings();
-    if (!empty($settings['default_image']['uuid'])) {
-      $uuid = $settings['default_image']['uuid'];
-      $default_encode_file = $FieldConfig->get('default_encode_file');
-      if (!empty($default_encode_file))
-        if ($stream_file = fopen($default_encode_file, 'r')) {
-          $filename = $FieldConfig->get('default_filename');
-          // Compose the default icon file destination.
-          // $icon_meta = stream_get_meta_data($stream_file);
-          // // File extension from MIME, only JPG/JPEG, PNG and SVG expected.
-          // [
-          // '',
-          // $icon_file_ext
-          // ] = explode('image/', $icon_meta['mediatype']);
-          // // SVG special case.
-          // if ($icon_file_ext == 'svg+xml') {
-          // $icon_file_ext = 'svg';
-          // }
-          /**
-           *
-           * @var \Drupal\Core\File\FileSystem $filesystem
-           */
-          $filesystem = \Drupal::service('file_system');
-          $icon_upload_path = "public://migrationwbh__field_config/";
-          $icon_file_destination = $icon_upload_path . $filename;
-          // Check the directory exists before writing data to it.
-          $filesystem->prepareDirectory($icon_upload_path, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-          // Save the default icon file.
-          $file_uri = $filesystem->saveData($stream_file, $icon_file_destination);
-          if ($file_uri) {
-            // Create the file entity.
-            $values = [
-              'uri' => $file_uri,
-              'uid' => \Drupal::currentUser()->id(),
-              'uuid' => $uuid,
-              'status' => FileInterface::STATUS_PERMANENT
-            ];
-            $file = File::create($values);
-            $file->save();
-            /** @var \Drupal\file\FileUsage\FileUsageInterface $file_usage */
-            $file_usage = \Drupal::service('file.usage');
-            // Add usage of the new icon file.
-            $file_usage->add($file, 'field', 'field_config', $FieldConfig->id());
-          }
-        }
-    }
-  }
-}
 
 /**
  * Implements hook_theme().
