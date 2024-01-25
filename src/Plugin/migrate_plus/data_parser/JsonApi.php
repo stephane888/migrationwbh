@@ -83,14 +83,7 @@ class JsonApi extends Json {
           }
       }
     }
-    // \Stephane888\Debug\debugLog::$max_depth = 7;
-    // $debug = [
-    // $response,
-    // $source_data
-    // ];
-    // \Stephane888\Debug\debugLog::$max_depth = 8;
-    // \Stephane888\Debug\debugLog::kintDebugDrupal($source_data,
-    // 'getSourceData-includes', true);
+    
     return $source_data;
   }
   

@@ -19,7 +19,7 @@ use Drupal\migrate\Plugin\migrate\process\FileCopy;
  * )
  */
 final class ImageEntityImport extends ImageImport {
-
+  
   /**
    *
    * {@inheritdoc}
@@ -30,9 +30,7 @@ final class ImageEntityImport extends ImageImport {
       $this->configuration['alt'] = 'none';
       return parent::transform($value, $migrate_executable, $row, $destination_property);
     }
-    // \Stephane888\Debug\debugLog::kintDebugDrupal($value,
-    // 'image_entity_import__transform', true);
     return null;
   }
-
+  
 }

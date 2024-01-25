@@ -39,8 +39,8 @@ class MigrationImportAutoInterface {
   
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
-      throw new \ErrorException('Données non valide');
-      \Stephane888\Debug\debugLog::kintDebugDrupal($data, 'MigrationImportAutoNode-ERROR--setData--', true);
+      \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
+      throw new \ErrorException('Données non valide : ' . $this->entityTypeId);
     }
     $this->fieldData = $data;
   }

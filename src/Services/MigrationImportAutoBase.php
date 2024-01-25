@@ -91,8 +91,8 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
-      throw new \ErrorException('Données non valide');
-      \Stephane888\Debug\debugLog::kintDebugDrupal($data, 'MigrationImportAutoBase-ERROR--setData--', true);
+      \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
+      throw new \ErrorException('Données non valide : ' . $this->entityTypeId);
     }
     $this->fieldData = $data;
   }
@@ -141,9 +141,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
           $migrate->setStatus(MigrationInterface::STATUS_IDLE);
           throw DebugCode::exception('runMigrate error : ' . $status, $executable->message);
         }
-      }
-      if ($this->entityTypeId == 'block') {
-        \Stephane888\Debug\debugLog::kintDebugDrupal($db, 'runMigrate', true);
       }
       return true;
     }

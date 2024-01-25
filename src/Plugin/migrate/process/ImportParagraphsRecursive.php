@@ -5,7 +5,6 @@ namespace Drupal\migrationwbh\Plugin\migrate\process;
 use Drupal\migrate\Row;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
-use Stephane888\Debug\debugLog;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -67,9 +66,6 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     //
     if (!empty($value)) {
-      // \Stephane888\Debug\debugLog::$max_depth = 10;
-      // \Stephane888\Debug\debugLog::kintDebugDrupal($value,
-      // 'import_paragraphs_recursive--value--', true);
       $val = $this->importParagraph($value);
       return $val;
     }
@@ -86,7 +82,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
       }
     }
     $row = $this->getParagraphRow($value);
-    // debugLog::kintDebugDrupal($row, 'getParagraphRow', true);
+    
     if ($row) {
       $configurations = [
         'source' => [
@@ -121,7 +117,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
             continue;
           try {
             $this->MigrationAutoImport->setData($val);
-            // debugLog::kintDebugDrupal($val, $fieldName . '---', true);
+            
             // si l'import des elements enfants s'effectuent bien ? on garde ses
             // id.
             if ($this->MigrationAutoImport->runImport()) {
@@ -140,8 +136,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
               'datas' => $this->MigrationAutoImport->getCurrentData(),
               $e->getTrace()
             ];
-            \Stephane888\Debug\debugLog::$max_depth = 10;
-            \Stephane888\Debug\debugLog::kintDebugDrupal($dbg, 'ParagraphsRecursive-auto-import-error--', true);
+            \Drupal::logger('migrationwbh')->critical($e->getMessage(), $dbg);
           }
         }
       // process
@@ -178,7 +173,7 @@ final class ImportParagraphsRecursive extends ProcessPluginBase implements Conta
     }
     catch (\Exception $e) {
       $migrateParagraph->setStatus(MigrationInterface::STATUS_IDLE);
-      debugLog::kintDebugDrupal(ExceptionExtractMessage::errorAll($e), 'runParagraphImport--error--', true);
+      \Drupal::logger('migrationwbh')->critical($e->getMessage(), ExceptionExtractMessage::errorAll($e));
       return false;
     }
   }
