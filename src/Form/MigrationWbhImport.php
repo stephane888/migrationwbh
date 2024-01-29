@@ -362,9 +362,11 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->rebuildTheme();
     parent::submitForm($form, $form_state);
     $this->messenger()->addMessage('Theme regenerer avec succes');
-    // $response = Url::fromUserInput('internal:/node');
-    // $form_state->setRedirect($response);
-    $form_state->setRedirect('<front>');
+    // On redirige l'utilisateur sur la langue par defaut.
+    $defaultLanguage = \Drupal::languageManager()->getDefaultLanguage();
+    $form_state->setRedirect('<front>', [], [
+      'language' => $defaultLanguage
+    ]);
   }
   
   /**
@@ -374,17 +376,20 @@ class MigrationWbhImport extends ConfigFormBase {
   protected function rebuildTheme() {
     $defaultThemeName = \Drupal::config('system.theme')->get('default');
     if ($defaultThemeName) {
-      $config_theme_entity = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
+      $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadByProperties([
         'hostname' => $defaultThemeName
       ]);
     }
     //
-    if (!empty($config_theme_entity)) {
-      $config_theme_entity = reset($config_theme_entity);
+    if (!empty($config_theme_entities)) {
+      /**
+       *
+       * @var \Drupal\generate_style_theme\Entity\ConfigThemeEntity $config_theme_entity
+       */
+      $config_theme_entity = reset($config_theme_entities);
       $config_theme_entity->set('run_npm', false);
+      $config_theme_entity->getLogo();
       $config_theme_entity->save();
-      // $GenerateStyleTheme = new GenerateStyleTheme($config_theme_entity);
-      // $GenerateStyleTheme->buildSubTheme(false, false);
     }
   }
   
