@@ -15,4 +15,13 @@ interface MigrationImportAutoBaseInterface {
    */
   public function buildDataRows(array $row, array &$data_rows);
   
+  /**
+   * Permet de construire le mapping entre les champs du flux et les champs de
+   * l'entité.
+   *
+   * @param array $configuration
+   * @param array $process
+   */
+  public function buildMappingProcess(array $configuration, array &$process);
+  
 }

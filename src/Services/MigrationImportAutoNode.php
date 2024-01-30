@@ -100,7 +100,7 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
    *        $configuration
    * @param array $process
    */
-  protected function buildMappingProcess($configuration, array &$process) {
+  public function buildMappingProcess($configuration, array &$process) {
     if (!empty($configuration['source']['data_rows'][0])) {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
         if ($fieldName == 'drupal_internal__nid') {

@@ -13,6 +13,7 @@ use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionExtractMessage;
 use Drupal\Component\Serialization\Json;
 use Drupal\migrate\MigrateException;
+use Drupal\user\Entity\Role;
 
 /**
  * Configure migrationwbh settings for this site.
@@ -121,6 +122,14 @@ class MigrationWbhImport extends ConfigFormBase {
     return $form;
   }
   
+  /**
+   * recuperation des informations permettant la connexion sur le serveur
+   * wb-horizon.com
+   *
+   * @param array $form
+   * @param FormStateInterface $form_state
+   * @param array $config
+   */
   protected function formState1(array &$form, FormStateInterface $form_state, $config) {
     $form['username'] = [
       '#type' => 'textfield',
@@ -159,6 +168,7 @@ class MigrationWbhImport extends ConfigFormBase {
   }
   
   /**
+   * Import des données dans un processus batch.
    *
    * @param array $form
    * @param FormStateInterface $form_state
@@ -362,6 +372,13 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->rebuildTheme();
     parent::submitForm($form, $form_state);
     $this->messenger()->addMessage('Theme regenerer avec succes');
+    // On ajoute les permessions.
+    $role = Role::load('anonymous');
+    if (!$role->hasPermission("view published blocks contents entities")) {
+      $role->grantPermission("view published blocks contents entities");
+      $role->save();
+    }
+    
     // On redirige l'utilisateur sur la langue par defaut.
     $defaultLanguage = \Drupal::languageManager()->getDefaultLanguage();
     $form_state->setRedirect('<front>', [], [

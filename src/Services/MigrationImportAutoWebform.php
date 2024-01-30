@@ -4,14 +4,7 @@ namespace Drupal\migrationwbh\Services;
 
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
-use Drupal\migrate\MigrateExecutable;
-use Drupal\migrate\MigrateMessage;
-use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\Core\File\FileSystemInterface;
-use Drupal\file\Entity\File;
-use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
-use PhpParser\Node\Stmt\Static_;
 
 class MigrationImportAutoWebform extends MigrationImportAutoBase {
   protected $fieldData;
@@ -93,7 +86,7 @@ class MigrationImportAutoWebform extends MigrationImportAutoBase {
    *        $configuration
    * @param array $process
    */
-  protected function buildMappingProcess($configuration, array &$process) {
+  public function buildMappingProcess($configuration, array &$process) {
     if (!empty($configuration['source']['data_rows'][0])) {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
         if ($fieldName == 'drupal_internal__id') {

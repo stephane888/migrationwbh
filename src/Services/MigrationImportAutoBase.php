@@ -526,4 +526,12 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   public function buildDataRows(array $row, array &$data_rows) {
   }
   
+  /**
+   *
+   * {@inheritdoc}
+   * @see \Drupal\migrationwbh\Services\MigrationImportAutoBaseInterface::buildMappingProcess()
+   */
+  public function buildMappingProcess(array $configuration, array &$process) {
+  }
+  
 }
