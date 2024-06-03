@@ -154,7 +154,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       \Drupal::logger('migrationwbh')->debug($e->getMessage(), $dbg);
       if ($this->debugMode) {
         $this->addDebugLogs($dbg, 'runMigrate');
-        dd($e->getMessage(), $dbg);
+        // dd($e->getMessage(), $dbg);
       }
       return false;
     }
@@ -169,7 +169,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       \Drupal::logger('migrationwbh')->alert($e->getMessage(), $dbg);
       if ($this->debugMode) {
         $this->addDebugLogs($dbg, 'runMigrate');
-        dd($e->getMessage(), $dbg);
+        // dd($e->getMessage(), $dbg);
       }
       return false;
     }
@@ -184,7 +184,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       \Drupal::logger('migrationwbh')->error($e->getMessage(), $dbg);
       if ($this->debugMode) {
         $this->addDebugLogs($dbg, 'runMigrate');
-        dd($e->getMessage(), $dbg);
+        // dd($e->getMessage(), $dbg);
       }
       return false;
     }
@@ -398,7 +398,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       \Drupal::logger('migrationwbh')->alert($e->getMessage(), $dbg);
       if ($this->debugMode) {
         $this->addToLogs($dbg, $fieldName);
-        dd($dbg, 'getRelationShip', true);
+        // dd($dbg, 'getRelationShip', true);
       }
     }
     catch (\Exception $e) {
@@ -409,7 +409,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       \Drupal::logger('migrationwbh')->alert($e->getMessage(), $dbg);
       if ($this->debugMode) {
         $this->addToLogs($dbg, $fieldName);
-        dd($dbg, 'getRelationShip', true);
+        // dd($dbg, 'getRelationShip', true);
       }
     }
   }
