@@ -8,6 +8,7 @@ use Stephane888\Debug\ExceptionExtractMessage;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\layout_builder\Section;
+use Drupal\migrate\Plugin\Migration;
 
 class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   private $SkypRunMigrate = false;
@@ -102,6 +103,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   }
   
   protected function runMigrate(array $configuration) {
+    $db = [];
     $this->configuration = $configuration;
     if ($this->SkypRunMigrate)
       return true;
@@ -124,6 +126,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
        */
       $migrate = $this->MigrationPluginManager->createInstance($plugin_id, $configuration);
       if (empty($migrate)) {
+        \Drupal::logger('migrationwbh')->error("Le plugin n'existe pas : " . $plugin_id);
         throw DebugCode::exception(" Le plugin n'existe pas : " . $plugin_id, $plugin_id);
       }
       $migrate->getIdMap()->prepareUpdate();
@@ -145,9 +148,11 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       return true;
     }
     catch (DebugCode $e) {
-      $dbg = [
+      $dbg = $db + [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
+        'plugin_id' => $plugin_id,
+        'configuration' => $configuration,
         'errors' => ExceptionExtractMessage::errorAll($e),
         'error_value' => $e->getContentToDebug()
       ];
@@ -159,10 +164,12 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       return false;
     }
     catch (\Exception $e) {
-      $migrate->setStatus(MigrationInterface::STATUS_IDLE);
-      $dbg = [
+      if (!empty($migrate))
+        $migrate->setStatus(MigrationInterface::STATUS_IDLE);
+      $dbg = $db + [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
+        'plugin_id' => $plugin_id,
         'configuration' => $configuration,
         'errors' => ExceptionExtractMessage::errorAll($e)
       ];
@@ -174,11 +181,13 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       return false;
     }
     catch (\Error $e) {
-      $migrate->setStatus(MigrationInterface::STATUS_IDLE);
-      $dbg = [
+      if (!empty($migrate))
+        $migrate->setStatus(MigrationInterface::STATUS_IDLE);
+      $dbg = $db + [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
         'configuration' => $configuration,
+        'plugin_id' => $plugin_id,
         'errors' => ExceptionExtractMessage::errorAll($e)
       ];
       \Drupal::logger('migrationwbh')->error($e->getMessage(), $dbg);

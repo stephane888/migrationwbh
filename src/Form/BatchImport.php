@@ -149,6 +149,7 @@ trait BatchImport {
     $context['results'][] = "5 pages";
     if (self::$debugMode) {
       $logs = $MigrationImportEntities->getLogs();
+      dump($logs);
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true, "logs");
     }
   }
