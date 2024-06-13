@@ -269,7 +269,33 @@ class MigrationAutoImport {
           return $results;
         }
         else {
-          if (!in_array($this->entityTypeId, $this->ignoreContentEntities))
+          /**
+           * à ce stade, on va mettre en place un executant dynamique.
+           * Mais en gardant un certains controls.
+           */
+          $entities = [
+            'commerce_product_attribute_value' => [
+              'id' => 'attribute_value_id',
+              'type' => 'integer'
+            ]
+          ];
+          if (!empty($entities[$this->entityTypeId])) {
+            $MigrationImportAutoEntitiesBundle = new MigrationImportAutoEntitiesBundle($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId, $this->bundle);
+            $MigrationImportAutoEntitiesBundle->setFieldId($entities[$this->entityTypeId]['id']);
+            $MigrationImportAutoEntitiesBundle->setFieldIdType($entities[$this->entityTypeId]['type']);
+            $MigrationImportAutoEntitiesBundle->setIgnoreDatas($this->ignoreExistantData);
+            $MigrationImportAutoEntitiesBundle->setData($this->fieldData);
+            $MigrationImportAutoEntitiesBundle->setRollback($this->rollback);
+            $results = $MigrationImportAutoEntitiesBundle->runImport();
+            static::$debugInfo[$this->entityTypeId][] = [
+              'logs' => $MigrationImportAutoEntitiesBundle->getLogs(),
+              'errors' => $MigrationImportAutoEntitiesBundle->getDebugLog()
+            ];
+            static::$subConf[$this->entityTypeId][] = $MigrationImportAutoEntitiesBundle->getConfiguration();
+            static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoEntitiesBundle->getRawDatas();
+            return $results;
+          }
+          elseif (!in_array($this->entityTypeId, $this->ignoreContentEntities))
             $this->getLogger('migrationwbh')->warning(" Le type contentEntity (with bundle) : `" . $this->entityTypeId . "` n'est pas encore pris en compte. <br> " . json_encode($this->fieldData));
         }
       }
@@ -327,11 +353,26 @@ class MigrationAutoImport {
             static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoConfigThemeEntity->getLogs();
             return $results;
             break;
+          /**
+           * à ce stade, on va mettre en place un executant dynamique.
+           * Mais en gardant un certains controls.
+           */
           default:
-            if (!in_array($this->entityTypeId, $this->ignoreContifEntities)) {
+            $entities = [
+              'hbk_collection' => 'hbk_collection'
+            ];
+            if (!empty($entities[$this->entityTypeId])) {
+              $MigrationImportAutoEntities = new MigrationImportAutoEntities($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+              $MigrationImportAutoEntities->setIgnoreDatas($this->ignoreExistantData);
+              $MigrationImportAutoEntities->setData($this->fieldData);
+              $MigrationImportAutoEntities->setRollback($this->rollback);
+              $results = $MigrationImportAutoEntities->runImport();
+              static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoEntities->getLogs();
+              return $results;
+            }
+            elseif (!in_array($this->entityTypeId, $this->ignoreContifEntities)) {
               $this->getLogger('migrationwbh')->warning(" Le type configEntity ou contentEntity (without bundle) : `" . $this->entityTypeId . "` n'est pas encore pris en compte. <br> " . json_encode($this->fieldData));
             }
-            
             break;
         }
       }
