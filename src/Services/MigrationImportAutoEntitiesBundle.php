@@ -36,15 +36,6 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
   protected $bundle = null;
   
   /**
-   * Entre permettant d'identifier un item.
-   * Paramettre dynamique, varie en fonction de l'entité.
-   *
-   * @var array
-   */
-  protected $field_id = 'drupal_internal__id';
-  protected $field_id_type = 'integer';
-  
-  /**
    * les champs qui serront ignorées dans le mapping.
    *
    * @var array
@@ -98,26 +89,6 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
     return $this->loopDatas($configuration);
   }
   
-  public function getFieldId() {
-    return $this->field_id;
-  }
-  
-  public function setFieldId($value) {
-    $this->field_id = $value;
-  }
-  
-  public function getFieldIdType() {
-    return $this->field_id_type;
-  }
-  
-  public function setFieldIdType($value) {
-    $this->field_id_type = $value;
-  }
-  
-  public function setIds(array $value) {
-    $this->ids = $value;
-  }
-  
   /**
    *
    * {@inheritdoc}
@@ -127,11 +98,20 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
     $this->getLayoutBuilderField($data_rows[$k]);
-    if (!isset($row['relationships'][$this->entityTypeId . '_type']['data']['meta']["drupal_internal__target_id"]))
-      throw DebugCode::exception("Impossible de determiner le type d'entité : " . $this->entityTypeId, $row);
     // Set type
-    $data_rows[$k]['type'] = $row['relationships'][$this->entityTypeId . '_type']['data']['meta']["drupal_internal__target_id"];
-    $this->bundle = $data_rows[$k]['type'];
+    if (!empty($row['relationships'][$this->entityTypeId . '_type']['data']['meta'][$this->getFieldId()])) {
+      $data_rows[$k]['type'] = $row['relationships'][$this->entityTypeId . '_type']['data']['meta'][$this->getFieldId()];
+      $this->bundle = $data_rows[$k]['type'];
+    }
+    elseif (!empty($row['type']) && str_contains($row['type'], "--")) {
+      $entity_array = explode("--", $row['type']);
+      $data_rows[$k]['type'] = $entity_array[1];
+      $this->bundle = $entity_array[1];
+    }
+    else {
+      throw DebugCode::exception("Impossible de determiner le bundle pour l'entité : " . $this->entityTypeId, $row);
+    }
+    
     // Get relationships datas
     foreach ($row['relationships'] as $fieldName => $value) {
       if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))

@@ -90,6 +90,15 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    */
   protected $numberItems = 0;
   
+  /**
+   * Entre permettant d'identifier un item.
+   * Paramettre dynamique, varie en fonction de l'entité.
+   *
+   * @var array
+   */
+  protected $field_id = 'drupal_internal__id';
+  protected $field_id_type = 'integer';
+  
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
@@ -368,7 +377,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         // if ($MigrationAutoImport->getEntityTypeId() == 'file') {
         if (!empty($value['data'][0])) {
           foreach ($value['data'] as $subValue) {
-            if (!empty($result[$subValue['meta']["drupal_internal__target_id"]])) {
+            if (!empty($subValue['meta']["drupal_internal__target_id"]) && !empty($result[$subValue['meta']["drupal_internal__target_id"]])) {
               $subValue['meta']["target_id"] = $subValue['meta']["drupal_internal__target_id"];
               unset($subValue['meta']["drupal_internal__target_id"]);
               $data_rows[$k][$fieldName][] = $subValue['meta'];
@@ -541,6 +550,22 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    * @see \Drupal\migrationwbh\Services\MigrationImportAutoBaseInterface::buildMappingProcess()
    */
   public function buildMappingProcess(array $configuration, array &$process) {
+  }
+  
+  public function getFieldId() {
+    return $this->field_id;
+  }
+  
+  public function setFieldId($value) {
+    $this->field_id = $value;
+  }
+  
+  public function getFieldIdType() {
+    return $this->field_id_type;
+  }
+  
+  public function setFieldIdType($value) {
+    $this->field_id_type = $value;
   }
   
 }

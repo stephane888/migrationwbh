@@ -63,8 +63,8 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
       ],
       'source' => [
         'ids' => [
-          'drupal_internal__id' => [
-            'type' => 'integer'
+          $this->getFieldId() => [
+            'type' => $this->getFieldIdType()
           ]
         ],
         'plugin' => 'embedded_data',
@@ -72,6 +72,10 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
+    if ($this->entityTypeId == 'commerce_product_attribute') {
+      \Stephane888\Debug\debugLog::$max_depth = 9;
+      \Stephane888\Debug\debugLog::kintDebugDrupal($configuration, 'runImport', true);
+    }
     return $this->loopDatas($configuration);
   }
   
@@ -84,11 +88,12 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
     // Get relationships datas
-    foreach ($row['relationships'] as $fieldName => $value) {
-      if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
-        continue;
-      $this->getRelationShip($data_rows, $k, $fieldName, $value);
-    }
+    if (!empty($row['relationships']))
+      foreach ($row['relationships'] as $fieldName => $value) {
+        if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
+          continue;
+        $this->getRelationShip($data_rows, $k, $fieldName, $value);
+      }
   }
   
   /**
@@ -100,7 +105,7 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
   public function buildMappingProcess($configuration, array &$process) {
     if (!empty($configuration['source']['data_rows'][0])) {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
-        if ($fieldName == 'drupal_internal__id') {
+        if ($fieldName == $this->getFieldId()) {
           $process['id'] = $fieldName;
         }
         elseif (in_array($fieldName, $this->unMappingFields))
@@ -120,7 +125,7 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
    */
   protected function validationDatas() {
     $this->performRawDatas();
-    if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
+    if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes'][$this->getFieldId()])) {
       return true;
     }
     else {

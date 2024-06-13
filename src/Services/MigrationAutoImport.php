@@ -275,7 +275,7 @@ class MigrationAutoImport {
            */
           $entities = [
             'commerce_product_attribute_value' => [
-              'id' => 'attribute_value_id',
+              'id' => 'drupal_internal__attribute_value_id',
               'type' => 'integer'
             ]
           ];
@@ -359,10 +359,19 @@ class MigrationAutoImport {
            */
           default:
             $entities = [
-              'hbk_collection' => 'hbk_collection'
+              'hbk_collection' => [
+                'id' => 'drupal_internal__id',
+                'type' => 'integer'
+              ],
+              'commerce_product_attribute' => [
+                'id' => 'drupal_internal__id',
+                'type' => 'string'
+              ]
             ];
             if (!empty($entities[$this->entityTypeId])) {
               $MigrationImportAutoEntities = new MigrationImportAutoEntities($this->MigrationPluginManager, $this->DataParserPluginManager, $this->entityTypeId);
+              $MigrationImportAutoEntities->setFieldId($entities[$this->entityTypeId]['id']);
+              $MigrationImportAutoEntities->setFieldIdType($entities[$this->entityTypeId]['type']);
               $MigrationImportAutoEntities->setIgnoreDatas($this->ignoreExistantData);
               $MigrationImportAutoEntities->setData($this->fieldData);
               $MigrationImportAutoEntities->setRollback($this->rollback);

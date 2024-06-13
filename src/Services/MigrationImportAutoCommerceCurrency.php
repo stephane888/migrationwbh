@@ -95,6 +95,7 @@ class MigrationImportAutoCommerceCurrency extends MigrationImportAutoBase {
    * @return boolean
    */
   protected function validationDatas() {
+    $this->performRawDatas();
     if (empty($this->rawDatas['data']))
       return true;
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__currencyCode'])) {
