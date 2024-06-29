@@ -72,7 +72,6 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-    
     return $this->loopDatas($configuration);
   }
   

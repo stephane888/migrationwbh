@@ -99,6 +99,12 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   protected $field_id = 'drupal_internal__id';
   protected $field_id_type = 'integer';
   
+  /**
+   *
+   * @var \Drupal\migrate\Plugin\MigrationPluginManager
+   */
+  protected $MigrationPluginManager;
+  
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
