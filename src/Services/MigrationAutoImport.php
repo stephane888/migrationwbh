@@ -106,7 +106,7 @@ class MigrationAutoImport {
    */
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
-      throw new \ErrorException('Données non valide');
+      throw new \ErrorException('Données non valide; EntityTypeId : ' . $this->entityTypeId . '; Bundle : ' . $this->bundle);
     }
     $this->fieldData = $data;
   }

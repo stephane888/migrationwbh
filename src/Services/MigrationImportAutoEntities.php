@@ -72,10 +72,7 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-    if ($this->entityTypeId == 'commerce_product_attribute') {
-      \Stephane888\Debug\debugLog::$max_depth = 9;
-      \Stephane888\Debug\debugLog::kintDebugDrupal($configuration, 'runImport', true);
-    }
+    
     return $this->loopDatas($configuration);
   }
   
