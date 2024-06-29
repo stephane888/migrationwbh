@@ -365,11 +365,15 @@ class MigrationAutoImport {
               ],
               'commerce_product_attribute' => [
                 'id' => 'drupal_internal__id',
-                'type' => 'string'
+                'type' => 'integer'
               ],
               'commerce_promotion' => [
                 'id' => 'drupal_internal__promotion_id',
-                'type' => 'string'
+                'type' => 'integer'
+              ],
+              'commerce_order_item' => [
+                'id' => 'drupal_internal__order_item_id',
+                'type' => 'integer'
               ]
             ];
             if (!empty($entities[$this->entityTypeId])) {
