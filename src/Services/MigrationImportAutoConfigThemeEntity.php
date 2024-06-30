@@ -66,7 +66,8 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
       'process' => []
     ];
     /**
-     * On ignore toujours l'existance des données.
+     * On ignore toujours l'existance des données pour le theme, afin de
+     * sassurer que la page d'accuiel est definie.
      *
      * @var \Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity $ignoreExistantData
      */
