@@ -217,7 +217,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param FormStateInterface $form_state
    */
   protected function formState3(array &$form, FormStateInterface $form_state) {
-    $this->assureThemeIsActive();
+    // $this->assureThemeIsActive();
     $this->actionButtons($form, $form_state, "Importer les blocks", 'ImportNextSubmit2');
   }
   
@@ -229,7 +229,7 @@ class MigrationWbhImport extends ConfigFormBase {
    * @param FormStateInterface $form_state
    */
   protected function formState4(array &$form, FormStateInterface $form_state) {
-    $this->assureThemeIsActive();
+    // $this->assureThemeIsActive();
     $this->actionButtons($form, $form_state, "Importer les configurations et passer à l'etape finale", 'ImportNextSubmit2');
   }
   

@@ -65,6 +65,12 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
+    /**
+     * On ignore toujours l'existance des données.
+     *
+     * @var \Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity $ignoreExistantData
+     */
+    $this->ignoreExistantData = false;
     return $this->loopDatas($configuration);
   }
   

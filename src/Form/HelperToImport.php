@@ -35,9 +35,14 @@ trait HelperToImport {
     }
   }
   
+  /**
+   *
+   * @deprecated L'ancien theme est activé depuis la generation du fichier
+   *             profile.
+   */
   protected function assureThemeIsActive() {
     $config_theme_entities = \Drupal::entityTypeManager()->getStorage('config_theme_entity')->loadMultiple();
-    // comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
+    // Comment identifiez l'ancien theme ? à partir de %_wb_horizon_%
     if (!empty($config_theme_entities)) {
       $old_config_theme_entity = null;
       foreach ($config_theme_entities as $config_theme_entity) {
@@ -51,7 +56,7 @@ trait HelperToImport {
         }
       }
       $conf = \Drupal::config("system.theme")->getRawData();
-      
+      //
       if ($conf['default'] != $old_config_theme_entity->getHostname()) {
         $old_config_theme_entity->save();
         $this->messenger()->addStatus("Le theme a été MAJ ");
