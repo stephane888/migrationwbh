@@ -23,7 +23,7 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-  
+
   /**
    * les champs qui serront ignorées dans le mapping.
    *
@@ -42,7 +42,7 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
     $this->entityTypeId = $entityTypeId;
     $this->LoggerChannel = $LoggerChannel;
   }
-  
+
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
@@ -76,7 +76,7 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
     $this->ignoreExistantData = false;
     return $this->loopDatas($configuration);
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -91,8 +91,14 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
         continue;
       $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
+
+    /**
+     * On force ces champs à false pour éviter la regénération du theme
+     */
+    $data_rows[$k]["run_npm"] = false;
+    $data_rows[$k]["force_regenerate_npm_files"] = false;
   }
-  
+
   /**
    *
    * @param
@@ -104,15 +110,14 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
         if ($fieldName == 'drupal_internal__id') {
           $process['id'] = $fieldName;
-        }
-        elseif (in_array($fieldName, $this->unMappingFields))
+        } elseif (in_array($fieldName, $this->unMappingFields))
           continue;
         else
           $process[$fieldName] = $fieldName;
       }
     }
   }
-  
+
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -124,8 +129,7 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
     $this->performRawDatas();
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
       return true;
-    }
-    else {
+    } else {
       $dbg = [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
@@ -133,15 +137,14 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
       throw DebugCode::exception(' AutoConfigThemeEntity: format de donnée non valide ', $dbg);
     }
   }
-  
+
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-  
+
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }
