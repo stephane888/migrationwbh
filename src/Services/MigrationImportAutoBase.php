@@ -403,7 +403,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       // if ($fieldName == 'field_reference_menu') {
       // dump($data_rows, $value);
       // }
-      $MigrationAutoImport = new MigrationAutoImport($this->MigrationPluginManager, $this->DataParserPluginManager);
+      $MigrationAutoImport = new MigrationAutoImport($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel);
       $MigrationAutoImport->setData($value);
       $MigrationAutoImport->rollback = $this->rollback;
       $MigrationAutoImport->ignoreExistantData = $this->ignoreExistantData;
