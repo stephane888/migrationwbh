@@ -32,7 +32,7 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
   protected array $rawDatas = [];
   
   /**
-   * les champs qui serront ignorées dans le mapping.
+   * Les champs qui serront ignorées dans le mapping.
    *
    * @var array
    */
@@ -92,12 +92,13 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
           continue;
         $this->getRelationShip($data_rows, $k, $fieldName, $value);
       }
-    
-    // if ($this->entityTypeId == 'commerce_promotion') {
-    // \Stephane888\Debug\debugLog::symfonyDebug($data_rows,
-    // 'buildMappingProcess', true);
-    // dd('d');
-    // }
+    // On formatte certains champs.
+    if ($this->entityTypeId == 'commerce_promotion') {
+      if ($data_rows[$k]["start_date"])
+        $data_rows[$k]["start_date"] = $this->getValidDateString($data_rows[$k]["start_date"]);
+      if ($data_rows[$k]["end_date"])
+        $data_rows[$k]["end_date"] = $this->getValidDateString($data_rows[$k]["end_date"]);
+    }
   }
   
   /**

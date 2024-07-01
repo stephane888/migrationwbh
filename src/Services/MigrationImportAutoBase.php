@@ -9,6 +9,7 @@ use Stephane888\Debug\ExceptionDebug as DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\layout_builder\Section;
 use Drupal\migrate\Plugin\Migration;
+use Drupal\Core\Datetime\DrupalDateTime;
 
 class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   private $SkypRunMigrate = false;
@@ -601,6 +602,17 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   
   public function setFieldIdType($value) {
     $this->field_id_type = $value;
+  }
+  
+  /**
+   * La date renvoyer peut etre auformat : "2024-01-02T09:48:47+01:00" et la
+   * date qui doit etre sauvegarder est au format : "2024-01-02T08:48:47".
+   *
+   * @param string $date_string
+   */
+  protected function getValidDateString(string $date_string) {
+    $DateTime = new DrupalDateTime($date_string);
+    return $DateTime->format("Y-m-d\Th:i:s");
   }
   
 }
