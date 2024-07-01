@@ -2,46 +2,54 @@ services:
   migrationwbh.migrate_import:
     class: Drupal\migrationwbh\Services\MigrationImport
     arguments: ['@plugin.manager.migration']
+    
+  logger.channel.migrationwbh:
+    parent: logger.channel_base
+    arguments: ['migrationwbh']
 
   migrationwbh.migrate_auto_import:
     class: Drupal\migrationwbh\Services\MigrationAutoImport
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh']
     
   migrationwbh.migrate_auto_import.site_internet_entity:
     class: Drupal\migrationwbh\Services\MigrationImportAutoSiteInternetEntity
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','site_internet_entity','']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','site_internet_entity','']
   
   migrationwbh.migrate_auto_import.paragraph:
     class: Drupal\migrationwbh\Services\MigrationImportAutoParagraph
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','paragraph','']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','paragraph','']
   
   migrationwbh.migrate_auto_import.node:
     class: Drupal\migrationwbh\Services\MigrationImportAutoNode
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','node','']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','node','']
     
   migrationwbh.migrate_auto_import.commerce_product:
     class: Drupal\migrationwbh\Services\MigrationImportAutoCommerceProduct
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','commerce_product','']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','commerce_product','']
   
   migrationwbh.migrate_auto_import.blocks_contents:
     class: Drupal\migrationwbh\Services\MigrationImportAutoBlocksContents
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','blocks_contents','']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','blocks_contents','']
    
   migrationwbh.migrate_auto_import.block_content:
     class: Drupal\migrationwbh\Services\MigrationImportAutoBlockContent
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','block_content','']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','block_content','']
     
   migrationwbh.migrate_auto_import.config_theme_entity:
     class: Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','config_theme_entity']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','config_theme_entity']
   
   migrationwbh.migrate_auto_import.menu_link_content:
     class: Drupal\migrationwbh\Services\MigrationImportAutoMenuLinkContent
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','menu_link_content','']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','menu_link_content','']
     
   migrationwbh.migrate_auto_import.block:
     class: Drupal\migrationwbh\Services\MigrationImportAutoBlock
-    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','block']
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','block']
+  
+  migrationwbh.migrate_auto_import.commerce_promotion:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoEntities
+    arguments: ['@plugin.manager.migration','@plugin.manager.migrate_plus.data_parser','@logger.channel.migrationwbh','commerce_promotion']
   
   migrationwbh.migrate_import_d7:
     class: Drupal\migrationwbh\Services\D7\ManageImport

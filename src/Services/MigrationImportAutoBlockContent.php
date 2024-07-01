@@ -12,6 +12,7 @@ use Drupal\file\Entity\File;
 use Stephane888\Debug\Utility as UtilityError;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
+use Drupal\Core\Logger\LoggerChannel;
 
 class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
   protected $fieldData;
@@ -52,11 +53,12 @@ class MigrationImportAutoBlockContent extends MigrationImportAutoBase {
   ];
   private $SkypRunMigrate = false;
   
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
+    $this->LoggerChannel = $LoggerChannel;
   }
   
   public function runImport() {

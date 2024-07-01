@@ -13,11 +13,12 @@ trait BatchImportConfig {
    */
   static function buildOperations(array &$batch, $external_domain, $limit) {
     $entities = [
+      'commerce_promotion',
+      'commerce_product',
       'paragraph',
       'blocks_contents',
       'block_content',
       'node',
-      'commerce_product',
       'site_internet_entity',
       'menu_link_content'
     ];
@@ -50,10 +51,10 @@ trait BatchImportConfig {
     $MigrationImportEntities->setDebugMode(self::$debugMode);
     $MigrationImportEntities->setUrl($url);
     $numberToImport = $MigrationImportEntities->CountAllData();
+    $offset = 0;
     if ($numberToImport > $limit) {
       $step = intdiv($numberToImport, $limit);
       $reste = $numberToImport % $limit;
-      $offset = 0;
       for ($i = 1; $i <= $step; $i++) {
         $batch['operations'][] = [
           self::class . '::_batch_import_' . $entity_id,
@@ -81,6 +82,17 @@ trait BatchImportConfig {
           ]
         ];
       }
+    }
+    else {
+      $batch['operations'][] = [
+        self::class . '::_batch_import_' . $entity_id,
+        [
+          $external_domain,
+          $offset,
+          $limit,
+          $numberToImport
+        ]
+      ];
     }
   }
   

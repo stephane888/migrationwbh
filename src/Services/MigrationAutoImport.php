@@ -6,6 +6,7 @@ use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
 use Stephane888\Debug\ExceptionExtractMessage;
 use Stephane888\Debug\debugLog;
+use Drupal\Core\Logger\LoggerChannel;
 
 /**
  * NB: pour une URL donnée les données sont du meme type.
@@ -91,12 +92,19 @@ class MigrationAutoImport {
   
   /**
    *
+   * @var \Drupal\Core\Logger\LoggerChannel
+   */
+  protected $LoggerChannel;
+  
+  /**
+   *
    * @param MigrationPluginManager $MigrationPluginManager
    * @param DataParserPluginManager $DataParserPluginManager
    */
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
+    $this->LoggerChannel = $LoggerChannel;
   }
   
   /**
@@ -374,6 +382,10 @@ class MigrationAutoImport {
               'commerce_order_item' => [
                 'id' => 'drupal_internal__order_item_id',
                 'type' => 'integer'
+              ],
+              'commerce_order_type' => [
+                'id' => 'drupal_internal__id',
+                'type' => 'string'
               ]
             ];
             if (!empty($entities[$this->entityTypeId])) {

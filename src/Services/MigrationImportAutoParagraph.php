@@ -5,6 +5,7 @@ namespace Drupal\migrationwbh\Services;
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
+use Drupal\Core\Logger\LoggerChannel;
 
 class MigrationImportAutoParagraph extends MigrationImportAutoBase {
   protected $fieldData;
@@ -43,11 +44,12 @@ class MigrationImportAutoParagraph extends MigrationImportAutoBase {
   ];
   private $SkypRunMigrate = false;
   
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId, $bundle) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
+    $this->LoggerChannel = $LoggerChannel;
   }
   
   public function runImport() {

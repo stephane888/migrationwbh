@@ -105,6 +105,18 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    */
   protected $MigrationPluginManager;
   
+  /**
+   *
+   * @var \Drupal\migrate_plus\DataParserPluginManager
+   */
+  protected $DataParserPluginManager;
+  
+  /**
+   *
+   * @var \Drupal\Core\Logger\LoggerChannel
+   */
+  protected $LoggerChannel;
+  
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
@@ -125,14 +137,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     $plugin_id = 'wbhorizon_entites_auto';
     if (!empty($this->entityTypeId))
       $plugin_id = $plugin_id . '_' . $this->entityTypeId;
-    // //
-    if ($this->entityTypeId == 'block') {
-      $db = [
-        $this->rollback,
-        $this->import,
-        'conf' => $this->configuration
-      ];
-    }
     // //
     try {
       /**
@@ -158,6 +162,26 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         if ($status !== 1) {
           $migrate->setStatus(MigrationInterface::STATUS_IDLE);
           throw DebugCode::exception('runMigrate error : ' . $status, $executable->message);
+        }
+        else {
+          // On verifie si les données sont effectivement present, car le
+          // validateur de migrate ne parvient pas toujours à s'assurer que
+          // l'import s'est bien passé.
+          if (!empty($this->configuration['source']['data_rows'])) {
+            $data_rows = $this->configuration['source']['data_rows'];
+            foreach ($data_rows as $data) {
+              if (!empty($data[$this->field_id])) {
+                $Storage = \Drupal::entityTypeManager()->getStorage($this->entityTypeId);
+                if ($Storage) {
+                  if (!$Storage->load($data[$this->field_id])) {
+                    $message = " Erreur de creation de l'entité : " . $this->entityTypeId . " => " . $data[$this->field_id];
+                    \Drupal::messenger()->addWarning($message);
+                    $this->LoggerChannel->warning($message);
+                  }
+                }
+              }
+            }
+          }
         }
       }
       return true;

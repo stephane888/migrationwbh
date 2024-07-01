@@ -7,6 +7,7 @@ use Drupal\migrate\MigrateMessage;
 use Stephane888\Debug\ExceptionExtractMessage;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\Core\Logger\LoggerChannel;
 
 class MigrationImportAutoInterface {
   private $SkypRunMigrate = false;

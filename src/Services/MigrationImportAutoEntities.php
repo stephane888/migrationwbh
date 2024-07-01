@@ -5,6 +5,7 @@ namespace Drupal\migrationwbh\Services;
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
+use Drupal\Core\Logger\LoggerChannel;
 
 /**
  * IL n'est pas definit comme service, car il est appeller automatiquement par
@@ -42,10 +43,11 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
   private $unGetRelationships = [];
   private $SkypRunMigrate = false;
   
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
+    $this->LoggerChannel = $LoggerChannel;
   }
   
   public function runImport() {
@@ -90,6 +92,12 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
           continue;
         $this->getRelationShip($data_rows, $k, $fieldName, $value);
       }
+    
+    // if ($this->entityTypeId == 'commerce_promotion') {
+    // \Stephane888\Debug\debugLog::symfonyDebug($data_rows,
+    // 'buildMappingProcess', true);
+    // dd('d');
+    // }
   }
   
   /**
@@ -129,6 +137,7 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
       ];
+      \Stephane888\Debug\debugLog::symfonyDebug($dbg, 'validationDatas___' . $this->entityTypeId . '___', true);
       throw DebugCode::exception($this->entityTypeId . ' : format de donnée non valide ', $dbg);
     }
   }

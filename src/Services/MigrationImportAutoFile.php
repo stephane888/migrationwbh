@@ -12,6 +12,7 @@ use Drupal\file\Entity\File;
 use Stephane888\Debug\debugLog;
 use Stephane888\Debug\ExceptionDebug as DebugCode;
 use GuzzleHttp\Client;
+use Drupal\Core\Logger\LoggerChannel;
 
 class MigrationImportAutoFile extends MigrationImportAutoBase {
   protected $fieldData;
@@ -42,10 +43,11 @@ class MigrationImportAutoFile extends MigrationImportAutoBase {
   private $unGetRelationships = [];
   private $SkypRunMigrate = false;
   
-  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, $entityTypeId) {
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
+    $this->LoggerChannel = $LoggerChannel;
   }
   
   public function runImport() {
