@@ -301,7 +301,8 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         'password' => static::$configImport['password']
       ],
       'request_options' => [
-        'timeout' => 300
+        'timeout' => 240,
+        'connect_timeout' => 30
       ]
     ];
     
@@ -331,6 +332,10 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         'plugin' => 'basic',
         'username' => static::$configImport['username'],
         'password' => static::$configImport['password']
+      ],
+      'request_options' => [
+        'timeout' => 240,
+        'connect_timeout' => 30
       ]
     ];
     

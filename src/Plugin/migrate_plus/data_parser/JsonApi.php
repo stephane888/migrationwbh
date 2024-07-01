@@ -5,6 +5,9 @@ namespace Drupal\migrationwbh\Plugin\migrate_plus\data_parser;
 
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
 use Drupal\Component\Serialization\Json as JsonDrupalApi;
+use Psr\Http\Message\ResponseInterface;
+use Drupal\migrate\MigrateException;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Obtain JSON data for migration.
@@ -133,6 +136,10 @@ class JsonApi extends Json {
      * @var \Drupal\migrate_plus\Plugin\migrate_plus\data_fetcher\Http $http
      */
     $http = $this->getDataFetcherPlugin();
+    // $headers = $http->getRequestHeaders();
+    // $headers['connect_timeout'] = 30;
+    // $headers['timeout'] = 240;
+    // $http->setRequestHeaders($headers);
     $response = $http->getResponseContent($url);
     $source_data = JsonDrupalApi::decode($response);
     return $source_data;
