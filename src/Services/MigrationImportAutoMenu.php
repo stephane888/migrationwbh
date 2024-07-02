@@ -23,7 +23,7 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-  
+
   /**
    * les champs qui serront ignorées dans le mapping.
    *
@@ -36,14 +36,14 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
     "paragraph_type"
   ];
   private $SkypRunMigrate = false;
-  
+
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->LoggerChannel = $LoggerChannel;
   }
-  
+
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
@@ -74,14 +74,14 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
     $entityTypeId = 'menu_link_content';
     foreach ($results as $id => $value) {
       // http://test62.wb-horizon.kksa/jsonapi/menu_link_content/test62_wb_horizon_kksa_main
-      $MigrationImportAutoMenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $entityTypeId, $id);
+      $MigrationImportAutoMenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $entityTypeId, $id);
       $url = trim(static::$configImport['external_domain'], '/') . '/jsonapi/menu_link_content/' . $id;
       $MigrationImportAutoMenuLinkContent->setUrl($url);
       $MigrationImportAutoMenuLinkContent->runImport();
     }
     return $results;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -91,7 +91,7 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
   }
-  
+
   /**
    *
    * @param
@@ -103,15 +103,14 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
         if ($fieldName == 'drupal_internal__id') {
           $process['id'] = $fieldName;
-        }
-        elseif (in_array($fieldName, $this->unMappingFields))
+        } elseif (in_array($fieldName, $this->unMappingFields))
           continue;
         else
           $process[$fieldName] = $fieldName;
       }
     }
   }
-  
+
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -123,8 +122,7 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
     $this->performRawDatas();
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes']['drupal_internal__id'])) {
       return true;
-    }
-    else {
+    } else {
       $dbg = [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
@@ -132,15 +130,14 @@ class MigrationImportAutoMenu extends MigrationImportAutoBase {
       throw DebugCode::exception('validationDatas error : ', $dbg);
     }
   }
-  
+
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-  
+
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }
