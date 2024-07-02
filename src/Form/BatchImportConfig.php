@@ -5,7 +5,7 @@ namespace Drupal\migrationwbh\Form;
 use Stephane888\Debug\debugLog;
 
 trait BatchImportConfig {
-  
+
   /**
    * Permet de construire toutes les operations.
    *
@@ -28,7 +28,7 @@ trait BatchImportConfig {
       $k++;
     }
   }
-  
+
   /**
    * Permet de construire les etapes d'import et permet aussi de compter le
    * nombre de données par entités.
@@ -82,8 +82,7 @@ trait BatchImportConfig {
           ]
         ];
       }
-    }
-    else {
+    } elseif ($numberToImport >= 1) {
       $batch['operations'][] = [
         self::class . '::_batch_import_' . $entity_id,
         [
@@ -95,7 +94,7 @@ trait BatchImportConfig {
       ];
     }
   }
-  
+
   /**
    * Permet de tester la connexion au serveur.
    *
@@ -109,11 +108,9 @@ trait BatchImportConfig {
       $limit = 1;
       self::_batch_import_entities_count($batch, $entity, $external_domain, $limit);
       return true;
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
       \Drupal::logger('migrationwbh')->alert($e->getMessage());
     }
     return false;
   }
-  
 }
