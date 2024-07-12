@@ -23,25 +23,25 @@ class MigrationAutoImport {
    */
   protected $fieldData;
   protected static $configImport;
-  
+
   /**
    *
    * @var \Drupal\migrate\Plugin\MigrationPluginManager
    */
   protected $MigrationPluginManager;
-  
+
   /**
    *
    * @var DataParserPluginManager
    */
   protected $DataParserPluginManager;
-  
+
   /**
    * entityTypeId ( node, block_content ...
    * )
    */
   protected $entityTypeId = null;
-  
+
   /**
    * disponible pour des entités avec bundles.
    */
@@ -50,14 +50,14 @@ class MigrationAutoImport {
   private static $subConf = [];
   private static $SubRawDatas = [];
   public $rollback = false;
-  
+
   /**
    * Domaine externe, ( Example : https://hakeuk.wb-horizon.com )
    *
    * @var string
    */
   protected $externalDomain = null;
-  
+
   /**
    * The logger channel factory service.
    *
@@ -73,7 +73,7 @@ class MigrationAutoImport {
     'domain',
     'user'
   ];
-  
+
   /**
    * Liste d'entites qui vont etre ignorer si elles ne sont pas traiter.
    *
@@ -82,20 +82,20 @@ class MigrationAutoImport {
   protected $ignoreContentEntities = [
     'user'
   ];
-  
+
   /**
    * Permet d'ignorer l'import d'une entite si son id existe deja.
    *
    * @var boolean
    */
   public $ignoreExistantData = false;
-  
+
   /**
    *
    * @var \Drupal\Core\Logger\LoggerChannel
    */
   protected $LoggerChannel;
-  
+
   /**
    *
    * @param MigrationPluginManager $MigrationPluginManager
@@ -106,7 +106,7 @@ class MigrationAutoImport {
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->LoggerChannel = $LoggerChannel;
   }
-  
+
   /**
    *
    * @param array $data
@@ -118,7 +118,7 @@ class MigrationAutoImport {
     }
     $this->fieldData = $data;
   }
-  
+
   /**
    * Le constructeur determine et initialise la class chargé de migrer l'entité.
    */
@@ -135,6 +135,23 @@ class MigrationAutoImport {
       // Entité avec bundle.
       if ($type[0] != $type[1]) {
         $this->bundle = $type[1];
+
+        /**
+         * recentrage car du code se répète.
+         * cela facilitera la maintenance du code
+         */
+        $migrationImportAutoEntity = match ($this->entityTypeId) {
+          'node' => new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'paragraph' => new MigrationImportAutoParagraph($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'taxonomy_term' => new MigrationImportAutoTaxoTerm($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'block_content' => new MigrationImportAutoBlockContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'blocks_contents' => new MigrationImportAutoBlocksContents($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'menu_link_content' => new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'site_internet_entity' => new MigrationImportAutoSiteInternetEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'commerce_product' => new MigrationImportAutoCommerceProduct($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'commerce_product_variation' => new MigrationImportAutoCommerceProductVariation($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+          'commerce_store' => new MigrationImportAutoCommerceStore($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
+        };
         if ($this->entityTypeId == 'node') {
           $MigrationImportAutoNode = new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoNode->setIgnoreDatas($this->ignoreExistantData);
@@ -148,8 +165,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoNode->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoNode->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'taxonomy_term') {
+        } elseif ($this->entityTypeId == 'taxonomy_term') {
           $MigrationImportAutoTaxoTerm = new MigrationImportAutoTaxoTerm($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoTaxoTerm->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoTaxoTerm->setData($this->fieldData);
@@ -162,8 +178,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoTaxoTerm->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoTaxoTerm->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'paragraph') {
+        } elseif ($this->entityTypeId == 'paragraph') {
           $MigrationImportAutoParagraph = new MigrationImportAutoParagraph($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoParagraph->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoParagraph->setData($this->fieldData);
@@ -176,8 +191,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoParagraph->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoParagraph->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'block_content') {
+        } elseif ($this->entityTypeId == 'block_content') {
           $MigrationImportAutoBlockContent = new MigrationImportAutoBlockContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoBlockContent->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoBlockContent->setData($this->fieldData);
@@ -190,8 +204,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoBlockContent->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'blocks_contents') {
+        } elseif ($this->entityTypeId == 'blocks_contents') {
           $MigrationImportAutoBlocksContents = new MigrationImportAutoBlocksContents($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoBlocksContents->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoBlocksContents->setData($this->fieldData);
@@ -219,8 +232,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoMenuLinkContent->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoMenuLinkContent->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'site_internet_entity') {
+        } elseif ($this->entityTypeId == 'site_internet_entity') {
           $MigrationImportAutoSiteInternetEntity = new MigrationImportAutoSiteInternetEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoSiteInternetEntity->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoSiteInternetEntity->setData($this->fieldData);
@@ -233,8 +245,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoSiteInternetEntity->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoSiteInternetEntity->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'commerce_product') {
+        } elseif ($this->entityTypeId == 'commerce_product') {
           $MigrationImportAutoCommerceProduct = new MigrationImportAutoCommerceProduct($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoCommerceProduct->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoCommerceProduct->setData($this->fieldData);
@@ -247,8 +258,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoCommerceProduct->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoCommerceProduct->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'commerce_product_variation') {
+        } elseif ($this->entityTypeId == 'commerce_product_variation') {
           $MigrationImportAutoCommerceProductVariation = new MigrationImportAutoCommerceProductVariation($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoCommerceProductVariation->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoCommerceProductVariation->setData($this->fieldData);
@@ -261,8 +271,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoCommerceProductVariation->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoCommerceProductVariation->getRawDatas();
           return $results;
-        }
-        elseif ($this->entityTypeId == 'commerce_store') {
+        } elseif ($this->entityTypeId == 'commerce_store') {
           $MigrationImportAutoCommerceStore = new MigrationImportAutoCommerceStore($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoCommerceStore->setIgnoreDatas($this->ignoreExistantData);
           $MigrationImportAutoCommerceStore->setData($this->fieldData);
@@ -275,8 +284,7 @@ class MigrationAutoImport {
           static::$subConf[$this->entityTypeId][] = $MigrationImportAutoCommerceStore->getConfiguration();
           static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoCommerceStore->getRawDatas();
           return $results;
-        }
-        else {
+        } else {
           /**
            * à ce stade, on va mettre en place un executant dynamique.
            * Mais en gardant un certains controls.
@@ -284,6 +292,10 @@ class MigrationAutoImport {
           $entities = [
             'commerce_product_attribute_value' => [
               'id' => 'drupal_internal__attribute_value_id',
+              'type' => 'integer'
+            ],
+            'booking_equipes' => [
+              'id' => 'drupal_internal__id',
               'type' => 'integer'
             ]
           ];
@@ -302,8 +314,7 @@ class MigrationAutoImport {
             static::$subConf[$this->entityTypeId][] = $MigrationImportAutoEntitiesBundle->getConfiguration();
             static::$SubRawDatas[$this->entityTypeId][] = $MigrationImportAutoEntitiesBundle->getRawDatas();
             return $results;
-          }
-          elseif (!in_array($this->entityTypeId, $this->ignoreContentEntities))
+          } elseif (!in_array($this->entityTypeId, $this->ignoreContentEntities))
             $this->getLogger('migrationwbh')->warning(" Le type contentEntity (with bundle) : `" . $this->entityTypeId . "` n'est pas encore pris en compte. <br> " . json_encode($this->fieldData));
         }
       }
@@ -361,10 +372,10 @@ class MigrationAutoImport {
             static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoConfigThemeEntity->getLogs();
             return $results;
             break;
-          /**
-           * à ce stade, on va mettre en place un executant dynamique.
-           * Mais en gardant un certains controls.
-           */
+            /**
+             * à ce stade, on va mettre en place un executant dynamique.
+             * Mais en gardant un certains controls.
+             */
           default:
             $entities = [
               'hbk_collection' => [
@@ -398,8 +409,7 @@ class MigrationAutoImport {
               $results = $MigrationImportAutoEntities->runImport();
               static::$debugInfo[$this->entityTypeId][] = $MigrationImportAutoEntities->getLogs();
               return $results;
-            }
-            elseif (!in_array($this->entityTypeId, $this->ignoreContifEntities)) {
+            } elseif (!in_array($this->entityTypeId, $this->ignoreContifEntities)) {
               $this->getLogger('migrationwbh')->warning(" Le type configEntity ou contentEntity (without bundle) : `" . $this->entityTypeId . "` n'est pas encore pris en compte. <br> " . json_encode($this->fieldData));
             }
             break;
@@ -413,11 +423,11 @@ class MigrationAutoImport {
     }
     return false;
   }
-  
+
   public function getEntityTypeId() {
     return $this->entityTypeId;
   }
-  
+
   /**
    * Utiliser pour model.
    *
@@ -446,7 +456,7 @@ class MigrationAutoImport {
     debugLog::kintDebugDrupal($MigrationImportAutoNode->getLogs(), 'testNodeImport', true);
     return $re;
   }
-  
+
   /**
    * Utiliser pour model.
    *
@@ -477,7 +487,7 @@ class MigrationAutoImport {
       $re
     ];
   }
-  
+
   /**
    * Utiliser pour model.
    *
@@ -511,20 +521,19 @@ class MigrationAutoImport {
       $re
     ];
   }
-  
+
   protected function getExternalDomain() {
     if (!$this->externalDomain) {
       $conf = \Drupal::config('migrationwbh.import')->getRawData();
       if (!empty($conf['external_domain'])) {
         $this->externalDomain = trim($conf['external_domain'], "/");
-      }
-      else {
+      } else {
         $this->messenger()->addWarning(' constants.url  not found .');
       }
     }
     return $this->externalDomain;
   }
-  
+
   /**
    *
    * @param string $channel
@@ -536,5 +545,4 @@ class MigrationAutoImport {
     }
     return $this->loggerFactory->get($channel);
   }
-  
 }
