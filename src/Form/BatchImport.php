@@ -17,7 +17,7 @@ trait BatchImport {
    */
   protected static $limitPagination = 10;
   protected static $debugMode = false;
-  
+
   /**
    * Permet de forcer les contenus à etre re-importer.
    *
@@ -25,7 +25,7 @@ trait BatchImport {
    */
   protected static $IgnoreDataReImport = false;
   protected static $keySettings = 'migrationwbh.import';
-  
+
   /**
    * Execute l'import via le batch API.
    * Pour que l'utilitair bash fonctionne bien, il faut connaitre toutes les
@@ -38,7 +38,7 @@ trait BatchImport {
     $external_domain = $config['external_domain'];
     $offset = 0;
     $numberToImport = 0;
-    
+
     $limit = !empty($config['number_import']) ? (int) $config['number_import'] : 3;
     $batch = [
       'title' => "Debut de l'import sur $external_domain",
@@ -77,21 +77,21 @@ trait BatchImport {
     // dd($batch);
     batch_set($batch);
   }
-  
+
   static public function import_run_all($success, $results, $operations) {
     if ($success)
       \Drupal::messenger()->addStatus("Run import all datas is OK");
     else
       \Drupal::messenger()->addError("Run import all datas with error");
   }
-  
+
   static public function import_run_partiel($success, $results, $operations) {
     if ($success)
       \Drupal::messenger()->addStatus("Run import partiel OK");
     else
       \Drupal::messenger()->addError("Run import partiel with error");
   }
-  
+
   /**
    *
    * @param string $external_domain
@@ -100,7 +100,7 @@ trait BatchImport {
   static public function _batch_import_blocks_contents($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     $url = trim($external_domain, '/') . "/jsonapi/export-entities-wbhorizon/blocks_contents?page[offset]=$offset&page[limit]=$limit";
-    
+
     /**
      *
      * @var \Drupal\migrationwbh\Services\MigrationImportAutoBlocksContents $MigrationImportEntities
@@ -111,7 +111,7 @@ trait BatchImport {
     if (self::$IgnoreDataReImport)
       $MigrationImportEntities->activeIgnoreData();
     $MigrationImportEntities->runImport();
-    
+
     $context['message'] = 'Import blocks_contents, ' . $MigrationImportEntities->getNumberItems() + $offset . '/' . $numberToImport;
     $context['results'][] = "5 pages";
     // $numberImport||$limit";
@@ -119,13 +119,13 @@ trait BatchImport {
     // $context['finished'] = "Cest fini ooohhh";
     // $context['percentage'] = 20;
     // $context["label"] = "My label osd";
-    
+
     if (self::$debugMode) {
       $logs = $MigrationImportEntities->getLogs();
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlocksContents', true, "logs");
     }
   }
-  
+
   /**
    *
    * @param string $external_domain
@@ -153,7 +153,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__SiteInternetEntity', true, "logs");
     }
   }
-  
+
   static public function _batch_import_block_content($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -166,7 +166,7 @@ trait BatchImport {
     if (self::$IgnoreDataReImport)
       $MigrationImportEntities->activeIgnoreData();
     $MigrationImportEntities->runImport();
-    
+
     $context['message'] = 'Import block_content, ' . $MigrationImportEntities->getNumberItems() + $offset . '/' . $numberToImport;
     $context['results'][] = "5 block_content";
     if (self::$debugMode) {
@@ -174,7 +174,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__BlockContent', true, "logs");
     }
   }
-  
+
   static public function _batch_import_paragraph($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -194,7 +194,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Paragraph', true, "logs");
     }
   }
-  
+
   static public function _batch_import_commerce_promotion($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -220,7 +220,34 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__commerce_promotion', true, "logs");
     }
   }
-  
+
+
+  static public function _batch_import_booking_equipes($external_domain, $offset, $limit, $numberToImport, &$context) {
+    self::getConfig();
+    /**
+     * Import paragraph.
+     */
+    $url = trim($external_domain, '/') . "/jsonapi/export-entities-wbhorizon/booking_equipes?page[offset]=$offset&page[limit]=$limit";
+    /**
+     *
+     * @var \Drupal\migrationwbh\Services\MigrationImportAutoEntities $MigrationImportEntities
+     */
+    $MigrationImportEntities = self::loadPluginMigrate('migrationwbh.migrate_auto_import.booking_equipes');
+    $MigrationImportEntities->setFieldId("drupal_internal__id");
+    $MigrationImportEntities->setFieldIdType("integer");
+    $MigrationImportEntities->setDebugMode(self::$debugMode);
+    $MigrationImportEntities->setUrl($url);
+    if (self::$IgnoreDataReImport)
+      $MigrationImportEntities->activeIgnoreData();
+    $MigrationImportEntities->runImport();
+    $context['message'] = 'Import des booking_equipes, ' . $MigrationImportEntities->getNumberItems() + $offset . '/' . $numberToImport;
+    $context['results'][] = "5 booking_equipes";
+    if (self::$debugMode) {
+      $logs = $MigrationImportEntities->getLogs();
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__booking_equipes', true, "logs");
+    }
+  }
+
   static public function _batch_import_node($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -240,7 +267,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Paragraph', true, "logs");
     }
   }
-  
+
   static public function _batch_import_commerce_product($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -260,7 +287,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__commerce_product', true, "logs");
     }
   }
-  
+
   static public function _batch_import_config_theme_entity($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -284,7 +311,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true, "logs");
     }
   }
-  
+
   static public function _batch_import_menu_link_content($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -308,7 +335,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true, "logs");
     }
   }
-  
+
   static public function _batch_import_block($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();
     /**
@@ -329,7 +356,7 @@ trait BatchImport {
       debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__Blok', true, "logs");
     }
   }
-  
+
   /**
    *
    * @param string $service_id
@@ -341,7 +368,7 @@ trait BatchImport {
     }
     return self::$CustomPluginMigrate[$service_id];
   }
-  
+
   /**
    * Permet de recuperer les informations de configurations.
    * (Chaque requete est unique).
@@ -352,5 +379,4 @@ trait BatchImport {
       self::$IgnoreDataReImport = !empty($config['force_re_import']) ? FALSE : TRUE;
     }
   }
-  
 }
