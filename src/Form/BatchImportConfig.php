@@ -13,6 +13,7 @@ trait BatchImportConfig {
    */
   static function buildOperations(array &$batch, $external_domain, $limit) {
     $entities = [
+      'commerce_shipping_method',
       'booking_equipes',
       'commerce_promotion',
       'commerce_product',

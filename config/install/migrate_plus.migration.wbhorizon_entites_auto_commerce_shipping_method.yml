@@ -1,0 +1,10 @@
+#basic conf
+id: wbhorizon_entites_auto_commerce_shipping_method
+label: "Permet d'importer les entites de maniere auto"
+description: "à utilisation dynamique, les données sont ajustées en function de chaque type d'entité"
+migration_group: wbhorizon
+dependencies:
+  enforced:
+    module:
+      - migrationwbh
+# Depences de migrations.

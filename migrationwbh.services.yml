@@ -134,6 +134,16 @@ services:
         "",
       ]
 
+  migrationwbh.migrate_auto_import.commerce_shipping_method:
+    class: Drupal\migrationwbh\Services\MigrationImportAutoEntities
+    arguments:
+      [
+        "@plugin.manager.migration",
+        "@plugin.manager.migrate_plus.data_parser",
+        "@logger.channel.migrationwbh",
+        "commerce_shipping_method",
+      ]
+
   migrationwbh.migrate_import_d7:
     class: Drupal\migrationwbh\Services\D7\ManageImport
     arguments: []

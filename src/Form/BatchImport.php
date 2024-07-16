@@ -221,6 +221,31 @@ trait BatchImport {
     }
   }
 
+  static public function _batch_import_commerce_shipping_method($external_domain, $offset, $limit, $numberToImport, &$context) {
+    self::getConfig();
+    /**
+     * Import paragraph.
+     */
+    $url = trim($external_domain, '/') . "/jsonapi/export-entities-wbhorizon/commerce_shipping_methods?page[offset]=$offset&page[limit]=$limit";
+    /**
+     *
+     * @var \Drupal\migrationwbh\Services\MigrationImportAutoEntities $MigrationImportEntities
+     */
+    $MigrationImportEntities = self::loadPluginMigrate('migrationwbh.migrate_auto_import.commerce_shipping_method');
+    $MigrationImportEntities->setFieldId("drupal_internal__shipping_method_id");
+    $MigrationImportEntities->setFieldIdType("integer");
+    $MigrationImportEntities->setDebugMode(self::$debugMode);
+    $MigrationImportEntities->setUrl($url);
+    if (self::$IgnoreDataReImport)
+      $MigrationImportEntities->activeIgnoreData();
+    $MigrationImportEntities->runImport();
+    $context['message'] = 'Import des commerce_shipping_methods, ' . $MigrationImportEntities->getNumberItems() + $offset . '/' . $numberToImport;
+    $context['results'][] = "5 commerce_shipping_methods";
+    if (self::$debugMode) {
+      $logs = $MigrationImportEntities->getLogs();
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__commerce_shipping_methods', true, "logs");
+    }
+  }
 
   static public function _batch_import_booking_equipes($external_domain, $offset, $limit, $numberToImport, &$context) {
     self::getConfig();

@@ -132,7 +132,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
 
   protected function runMigrate(array $configuration) {
     $db = [];
-    // dd($configuration);
     $this->configuration = $configuration;
     if ($this->SkypRunMigrate)
       return true;
@@ -202,6 +201,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       }
       return false;
     } catch (\Exception $e) {
+      // dd($e);
       if (!empty($migrate))
         $migrate->setStatus(MigrationInterface::STATUS_IDLE);
       $dbg = $db + [
@@ -218,6 +218,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       }
       return false;
     } catch (\Error $e) {
+      // dd($e);
       if (!empty($migrate))
         $migrate->setStatus(MigrationInterface::STATUS_IDLE);
       $dbg = $db + [
@@ -256,7 +257,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     // dd($this->rawDatas["data"]);
     if (!empty($this->rawDatas['data']))
       foreach ($this->rawDatas['data'] as $k => $row) {
-
+        // dd($row);
         $confRow[$k] = $configuration;
         $entityId = $k;
         // Get id contenu.
@@ -280,7 +281,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         if (!empty($row['attributes']['path'])) {
           $row['attributes']['path'] = [];
         }
-        // dd($this);
         $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
         $this->buildMappingProcess($confRow[$k], $confRow[$k]['process']);
         $results[$entityId] = $this->runMigrate($confRow[$k]);
