@@ -173,10 +173,20 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
               if (!empty($data[$this->field_id])) {
                 $Storage = \Drupal::entityTypeManager()->getStorage($this->entityTypeId);
                 if ($Storage) {
-                  if (!$Storage->load($data[$this->field_id])) {
+                  $newEntity = $Storage->load($data[$this->field_id]);
+                  if (!$newEntity) {
                     $message = " Erreur de creation de l'entité : " . $this->entityTypeId . " => " . $data[$this->field_id];
                     \Drupal::messenger()->addWarning($message);
                     $this->LoggerChannel->warning($message);
+                  }
+                  else {
+                    // On a un probleme pour la generation du path, on ne
+                    // souhaite pas recuperer le path provenant de wbhorizon.
+                    // on souhaite en creer un nouveau.
+                    if (($newEntity instanceof ContentEntityInterface) && $newEntity->hasField('path')) {
+                      $newEntity->path->pathauto = PathautoState::CREATE;
+                      \Drupal::service('pathauto.generator')->updateEntityAlias($newEntity, 'update');
+                    }
                   }
                 }
               }
