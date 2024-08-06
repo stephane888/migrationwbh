@@ -135,23 +135,6 @@ class MigrationAutoImport {
       // Entité avec bundle.
       if ($type[0] != $type[1]) {
         $this->bundle = $type[1];
-
-        /**
-         * recentrage car du code se répète.
-         * cela facilitera la maintenance du code
-         */
-        $migrationImportAutoEntity = match ($this->entityTypeId) {
-          'node' => new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'paragraph' => new MigrationImportAutoParagraph($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'taxonomy_term' => new MigrationImportAutoTaxoTerm($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'block_content' => new MigrationImportAutoBlockContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'blocks_contents' => new MigrationImportAutoBlocksContents($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'menu_link_content' => new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'site_internet_entity' => new MigrationImportAutoSiteInternetEntity($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'commerce_product' => new MigrationImportAutoCommerceProduct($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'commerce_product_variation' => new MigrationImportAutoCommerceProductVariation($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-          'commerce_store' => new MigrationImportAutoCommerceStore($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle),
-        };
         if ($this->entityTypeId == 'node') {
           $MigrationImportAutoNode = new MigrationImportAutoNode($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
           $MigrationImportAutoNode->setIgnoreDatas($this->ignoreExistantData);
