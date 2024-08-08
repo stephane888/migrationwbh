@@ -148,4 +148,5 @@ class JsonApi extends Json {
   public function getDataByExternalApi(string $url) {
     return $this->getSourceData($url);
   }
+  
 }
