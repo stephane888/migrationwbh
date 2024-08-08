@@ -188,7 +188,12 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
                     // on souhaite en creer un nouveau.
                     if (($newEntity instanceof ContentEntityInterface) && $newEntity->hasField('path')) {
                       $newEntity->path->pathauto = PathautoState::CREATE;
-                      \Drupal::service('pathauto.generator')->updateEntityAlias($newEntity, 'insert');
+                      /**
+                       *
+                       * @var \Drupal\pathauto\PathautoGenerator $PathGenerator
+                       */
+                      $PathGenerator = \Drupal::service('pathauto.generator');
+                      $PathGenerator->updateEntityAlias($newEntity, 'insert');
                     }
                   }
                 }
