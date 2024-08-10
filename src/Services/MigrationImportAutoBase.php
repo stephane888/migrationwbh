@@ -436,6 +436,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
           foreach ($value['data'] as $subValue) {
             if (!empty($subValue['meta']["drupal_internal__target_id"]) && !empty($result[$subValue['meta']["drupal_internal__target_id"]])) {
               $subValue['meta']["target_id"] = $subValue['meta']["drupal_internal__target_id"];
+              unset($subValue['meta']["target_revision_id"]);
               unset($subValue['meta']["drupal_internal__target_id"]);
               $data_rows[$k][$fieldName][] = $subValue['meta'];
             }
