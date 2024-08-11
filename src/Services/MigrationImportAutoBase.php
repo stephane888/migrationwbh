@@ -453,16 +453,44 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
                 ] = explode("--", $subValue['type']);
                 $storage = $this->GetEntityTypeManager()->getStorage($entity_type_id);
                 if ($storage && $newEntity = $storage->load($subValue['meta']["target_id"])) {
+                  $key = 'revision';
+                  if ($newEntity->getEntityType()->hasKey($key)) {
+                    $field_name_key = $newEntity->getEntityType()->getKey($key);
+                    $definition = $newEntity->getFieldDefinition($field_name_key);
+                    $property = $definition->getFieldStorageDefinition()->getMainPropertyName();
+                    $subValue['meta']['target_revision_id'] = $newEntity->get($field_name_key)->$property;
+                  }
                 }
               }
-              // set value
+              // Set value.
               $data_rows[$k][$fieldName][] = $subValue['meta'];
             }
           }
         }
-        else {
+        elseif (isset($value['data']['meta']["drupal_internal__target_id"])) {
           $value['data']['meta']["target_id"] = $value['data']['meta']["drupal_internal__target_id"];
           unset($value['data']['meta']["drupal_internal__target_id"]);
+          $subValue = $value['data'];
+          /**
+           * Les revisions n'ont pas la bonne valeur.
+           */
+          if (!empty($subValue['type'])) {
+            [
+              $entity_type_id,
+              $bundle
+            ] = explode("--", $subValue['type']);
+            $storage = $this->GetEntityTypeManager()->getStorage($entity_type_id);
+            if ($storage && $newEntity = $storage->load($subValue['meta']["target_id"])) {
+              $key = 'revision';
+              if ($newEntity->getEntityType()->hasKey($key)) {
+                $field_name_key = $newEntity->getEntityType()->getKey($key);
+                $definition = $newEntity->getFieldDefinition($field_name_key);
+                $property = $definition->getFieldStorageDefinition()->getMainPropertyName();
+                $value['data']['meta']['target_revision_id'] = $newEntity->get($field_name_key)->$property;
+              }
+            }
+          }
+          // set value.
           $data_rows[$k][$fieldName] = $value['data']['meta'];
         }
         
