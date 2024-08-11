@@ -120,6 +120,12 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    */
   protected $LoggerChannel;
   
+  /**
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+  
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
@@ -174,7 +180,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
             $data_rows = $this->configuration['source']['data_rows'];
             foreach ($data_rows as $data) {
               if (!empty($data[$this->field_id])) {
-                $Storage = \Drupal::entityTypeManager()->getStorage($this->entityTypeId);
+                $Storage = $this->GetEntityTypeManager()->getStorage($this->entityTypeId);
                 if ($Storage) {
                   $newEntity = $Storage->load($data[$this->field_id]);
                   if (!$newEntity) {
@@ -288,7 +294,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
           $entityId = $row['attributes'][$idKey];
         // ignore existant datas.
         if ($this->ignoreExistantData) {
-          $entity = \Drupal::entityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
+          $entity = $this->GetEntityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
           if ($entity) {
             $results[$entityId] = true;
             continue;
@@ -436,8 +442,20 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
           foreach ($value['data'] as $subValue) {
             if (!empty($subValue['meta']["drupal_internal__target_id"]) && !empty($result[$subValue['meta']["drupal_internal__target_id"]])) {
               $subValue['meta']["target_id"] = $subValue['meta']["drupal_internal__target_id"];
-              unset($subValue['meta']["target_revision_id"]);
               unset($subValue['meta']["drupal_internal__target_id"]);
+              /**
+               * Les revisions n'ont pas la bonne valeur.
+               */
+              if (!empty($subValue['type'])) {
+                [
+                  $entity_type_id,
+                  $bundle
+                ] = explode("--", $subValue['type']);
+                $storage = $this->GetEntityTypeManager()->getStorage($entity_type_id);
+                if ($storage && $newEntity = $storage->load($subValue['meta']["target_id"])) {
+                }
+              }
+              // set value
               $data_rows[$k][$fieldName][] = $subValue['meta'];
             }
           }
@@ -624,6 +642,16 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   
   public function setFieldIdType($value) {
     $this->field_id_type = $value;
+  }
+  
+  /**
+   *
+   * @return \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  public function GetEntityTypeManager() {
+    if (!$this->entityTypeManager)
+      $this->entityTypeManager = \Drupal::entityTypeManager();
+    return $this->entityTypeManager;
   }
   
   /**
