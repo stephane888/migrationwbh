@@ -22,19 +22,19 @@ class MigrationWbhImport extends ConfigFormBase {
   use BatchImport;
   use HelperToImport;
   use BatchImportConfig;
-  
+
   /**
    *
    * @var \Drupal\migrationwbh\Services\MigrationImport
    */
   protected $MigrationImport;
-  
+
   /**
    *
    * @var \Drupal\Core\Render\Renderer
    */
   protected $Renderer;
-  
+
   /**
    *
    * @var integer
@@ -56,19 +56,19 @@ class MigrationWbhImport extends ConfigFormBase {
     'wbhorizon_block_content_menu' => 'wbhorizon_block_content_menu',
     'wbhorizon_block_content_bp' => 'wbhorizon_block_content_bp'
   ];
-  
+
   /**
    *
    * @var \Drupal\migrationwbh\Services\MigrationImportAutoBlock
    */
   protected $MigrationImportAutoBlock;
-  
+
   /**
    *
    * @var LayoutgenentitystylesServices
    */
   // protected $LayoutgenentitystylesServices;
-  
+
   /**
    *
    * @param ConfigFactoryInterface $config_factory
@@ -80,7 +80,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->Renderer = $Renderer;
     $this->MigrationImportAutoBlock = $MigrationImportAutoBlock;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -88,14 +88,14 @@ class MigrationWbhImport extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static($container->get('config.factory'), $container->get('migrationwbh.migrate_import'), $container->get('renderer'), $container->get('migrationwbh.migrate_auto_import.block'));
   }
-  
+
   /**
    *
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $config = $this->config(static::$keySettings)->getRawData();
-    
+
     // if ($form_state->has('step')) {
     if (!empty($_GET['step'])) {
       switch ($_GET['step']) {
@@ -114,14 +114,13 @@ class MigrationWbhImport extends ConfigFormBase {
           $this->formState5($form, $form_state, $config);
           break;
       }
-    }
-    else {
+    } else {
       $form_state->set('step', 1);
       $this->formState1($form, $form_state, $config);
     }
     return $form;
   }
-  
+
   /**
    * recuperation des informations permettant la connexion sur le serveur
    * wb-horizon.com
@@ -166,7 +165,7 @@ class MigrationWbhImport extends ConfigFormBase {
     //
     $this->actionButtons($form, $form_state, "Suivant", "saveConfigNext");
   }
-  
+
   /**
    * Import des données dans un processus batch.
    *
@@ -181,19 +180,17 @@ class MigrationWbhImport extends ConfigFormBase {
       $this->createDomain();
       $this->disableUseDomainConfig();
       $this->actionButtons($form, $form_state, "Importer les contenus et passer à l'etape suivante", 'ImportNextSubmit');
-    }
-    catch (MigrateException $e) {
+    } catch (MigrateException $e) {
       $this->messenger()->addError("Une erreur s'est produite, vieillez contactez l'administrateur");
       $this->messenger()->addError($e->getMessage());
       $this->logger('migrationwbh')->alert($e->getMessage(), ExceptionExtractMessage::errorAll($e));
-    }
-    catch (\Error $e) {
+    } catch (\Error $e) {
       $this->messenger()->addError("Une erreur s'est produite, vieillez contactez l'administrateur");
       $this->messenger()->addError($e->getMessage());
       $this->logger('migrationwbh')->alert($e->getMessage(), ExceptionExtractMessage::errorAll($e));
     }
   }
-  
+
   /**
    * Permet de faire de tests d'import.
    */
@@ -210,7 +207,7 @@ class MigrationWbhImport extends ConfigFormBase {
     self::_batch_import_paragraph($external_domain, $offset, $limit, $progress, $context);
     // $this->runBatch($config);
   }
-  
+
   /**
    *
    * @param array $form
@@ -220,7 +217,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // $this->assureThemeIsActive();
     $this->actionButtons($form, $form_state, "Importer les blocks", 'ImportNextSubmit2');
   }
-  
+
   /**
    * Limport du block entete ne marche pas à tous les couts, d'ou l'ajout de
    * cette etape afin de forcer l'import de l'ente.
@@ -232,7 +229,7 @@ class MigrationWbhImport extends ConfigFormBase {
     // $this->assureThemeIsActive();
     $this->actionButtons($form, $form_state, "Importer les configurations et passer à l'etape finale", 'ImportNextSubmit2');
   }
-  
+
   protected function formState5(array &$form, FormStateInterface $form_state, $config) {
     $form['info'] = [
       '#type' => 'html_tag',
@@ -243,14 +240,14 @@ class MigrationWbhImport extends ConfigFormBase {
     $this->disabledBlocks();
     $this->actionButtons($form, $form_state);
   }
-  
+
   public function validateForm(array &$form, FormStateInterface $form_state) {
     //
   }
-  
+
   public function text_identification($element, FormStateInterface $form_state) {
   }
-  
+
   /**
    *
    * @param array $form
@@ -289,7 +286,7 @@ class MigrationWbhImport extends ConfigFormBase {
       }
     }
   }
-  
+
   /**
    *
    * @param array $form
@@ -346,7 +343,7 @@ class MigrationWbhImport extends ConfigFormBase {
       ];
     }
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -354,7 +351,7 @@ class MigrationWbhImport extends ConfigFormBase {
   public function getFormId() {
     return 'migrationwbh_import';
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -364,7 +361,7 @@ class MigrationWbhImport extends ConfigFormBase {
       static::$keySettings
     ];
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -381,14 +378,14 @@ class MigrationWbhImport extends ConfigFormBase {
       $role->grantPermission("view published blocks contents entities");
       $role->save();
     }
-    
+
     // On redirige l'utilisateur sur la langue par defaut.
     $defaultLanguage = \Drupal::languageManager()->getDefaultLanguage();
     $form_state->setRedirect('<front>', [], [
       'language' => $defaultLanguage
     ]);
   }
-  
+
   /**
    * Cette function permet d'appliquer les paramettres du themes, notament le
    * logo.
@@ -412,7 +409,7 @@ class MigrationWbhImport extends ConfigFormBase {
       $config_theme_entity->save();
     }
   }
-  
+
   /**
    *
    * @param array $form
@@ -426,9 +423,9 @@ class MigrationWbhImport extends ConfigFormBase {
     $form_state->set('step', $nextStep);
     $form_state->setRebuild();
   }
-  
+
   public function saveConfigNext(array &$form, FormStateInterface $form_state) {
-    
+
     // $nextStep = $form_state->get('step') + 1;
     $nextStep = !empty($_GET['step']) ? $_GET['step'] + 1 : 2;
     if ($nextStep > $this->maxStep)
@@ -448,29 +445,22 @@ class MigrationWbhImport extends ConfigFormBase {
       // Permet de tester la connexion au serveur.
       if (self::checkConnexionFrom($form_state->getValue('external_domain'))) {
         // Mise à jour des configurations.
-        $externalConf = Json::decode(file_get_contents(trim($config->get('external_domain'), '/') . '/export-entities-wbhorizon/show-site-config'));
-        $editConfig = \Drupal::configFactory()->getEditable('system.site');
-        if (!empty($externalConf)) {
-          if (!empty($externalConf['system.site']['langcode']))
-            $editConfig->set('langcode', $externalConf['system.site']['langcode']);
-          if (!empty($externalConf['system.site']['default_langcode']))
-            $editConfig->set('default_langcode', $externalConf['system.site']['default_langcode']);
-          $editConfig->save();
-        }
+        /**
+         * plus besoin de surcharger les configurations
+         * @see \Drupal\export_entities_wbhorizon\Controller\ExportEntitiesController::ShowSiteConfig
+         */
         $form_state->setRedirect('migrationwbh.runimportform', [], [
           'query' => [
             'step' => $nextStep
           ]
         ]);
-      }
-      else
+      } else
         $this->messenger()->addError("Echec de connexion au serveur distant.");
-    }
-    catch (\Error $e) {
+    } catch (\Error $e) {
       $this->messenger()->addWarning($e->getMessage());
     }
   }
-  
+
   /**
    * Importation des données.
    *
@@ -484,7 +474,7 @@ class MigrationWbhImport extends ConfigFormBase {
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
-    
+
     debugLog::$max_depth = 15;
     $this->runBatch($config);
     // Import des nodes.
@@ -495,7 +485,7 @@ class MigrationWbhImport extends ConfigFormBase {
       ]
     ]);
   }
-  
+
   /**
    * --
    *
@@ -509,7 +499,7 @@ class MigrationWbhImport extends ConfigFormBase {
     if ($nextStep > $this->maxStep)
       $nextStep = $this->maxStep;
     $form_state->set('step', $nextStep);
-    
+
     // Import des blocks.
     // $urlBlock = trim($config['external_domain'], '/') .
     // '/jsonapi/export/block';
@@ -526,7 +516,7 @@ class MigrationWbhImport extends ConfigFormBase {
       ]
     ]);
   }
-  
+
   public function selectPreviewsFieldSubmit(array &$form, FormStateInterface $form_state) {
     $pvStep = !empty($_GET['step']) ? $_GET['step'] - 1 : 0;
     if ($pvStep <= 0)
@@ -539,7 +529,4 @@ class MigrationWbhImport extends ConfigFormBase {
       ]
     ]);
   }
-  
 }
-
-
