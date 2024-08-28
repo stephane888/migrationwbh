@@ -20,7 +20,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    * Permet de recuperer les données provenant de relation Ship.
    */
   protected $fieldData;
-  
+
   /**
    * Permet de recuperer les données à partir d'une source.
    */
@@ -66,13 +66,13 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    * @var boolean
    */
   protected $ignoreExistantData = false;
-  
+
   /**
    * entityTypeId ( node, block_content ...
    * )
    */
   protected $entityTypeId = null;
-  
+
   /**
    * Permet de suivre l'import et analysé son status.
    *
@@ -81,7 +81,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   protected static $logs = [];
   //
   protected static $configImport;
-  
+
   /**
    * id du domaine encours.
    */
@@ -92,7 +92,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    * @var integer
    */
   protected $numberItems = 0;
-  
+
   /**
    * Entre permettant d'identifier un item.
    * Paramettre dynamique, varie en fonction de l'entité.
@@ -101,31 +101,31 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    */
   protected $field_id = 'drupal_internal__id';
   protected $field_id_type = 'integer';
-  
+
   /**
    *
    * @var \Drupal\migrate\Plugin\MigrationPluginManager
    */
   protected $MigrationPluginManager;
-  
+
   /**
    *
    * @var \Drupal\migrate_plus\DataParserPluginManager
    */
   protected $DataParserPluginManager;
-  
+
   /**
    *
    * @var \Drupal\Core\Logger\LoggerChannel
    */
   protected $LoggerChannel;
-  
+
   /**
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
-  
+
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
@@ -133,11 +133,11 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     }
     $this->fieldData = $data;
   }
-  
+
   public function setUrl($url) {
     $this->url = $url;
   }
-  
+
   protected function runMigrate(array $configuration) {
     $db = [];
     $this->configuration = $configuration;
@@ -162,7 +162,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         $db['getMessages'] = $migrate->getIdMap()->getMessages();
       }
       $executable = new MigrateExecutable($migrate, new MigrateMessage());
-      
+
       if ($this->rollback)
         $executable->rollback();
       // Run the migration.
@@ -171,8 +171,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         if ($status !== 1) {
           $migrate->setStatus(MigrationInterface::STATUS_IDLE);
           throw DebugCode::exception('runMigrate error : ' . $status, $executable->message);
-        }
-        else {
+        } else {
           // On verifie si les données sont effectivement present, car le
           // validateur de migrate ne parvient pas toujours à s'assurer que
           // l'import s'est bien passé.
@@ -187,8 +186,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
                     $message = " Erreur de creation de l'entité : " . $this->entityTypeId . " => " . $data[$this->field_id];
                     \Drupal::messenger()->addWarning($message);
                     $this->LoggerChannel->warning($message);
-                  }
-                  else {
+                  } else {
                     // On a un probleme pour la generation du path, on ne
                     // souhaite pas recuperer le path provenant de wbhorizon.
                     // on souhaite en creer un nouveau.
@@ -209,8 +207,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         }
       }
       return true;
-    }
-    catch (DebugCode $e) {
+    } catch (DebugCode $e) {
       $dbg = $db + [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
@@ -225,8 +222,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         // dd($e->getMessage(), $dbg);
       }
       return false;
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
       // dd($e);
       if (!empty($migrate))
         $migrate->setStatus(MigrationInterface::STATUS_IDLE);
@@ -243,8 +239,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         // dd($e->getMessage(), $dbg);
       }
       return false;
-    }
-    catch (\Error $e) {
+    } catch (\Error $e) {
       // dd($e);
       if (!empty($migrate))
         $migrate->setStatus(MigrationInterface::STATUS_IDLE);
@@ -263,7 +258,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       return false;
     }
   }
-  
+
   /**
    * Permet de determiner le nombre données.
    */
@@ -272,7 +267,17 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       throw new \ErrorException(' Vous devez definir fieldData ');
     return $this->retrieveCountDatas();
   }
-  
+  /**
+   * Set the language that is being imported as default.
+   * this functino will we deprecated once all languages from the source site will be imported
+   */
+  protected function overwriteDefaultLanguage() {
+    foreach ($this->rawDatas["data"] as &$rawData) {
+      $rawData["attributes"]["default_langcode"] = True;
+      $rawData["attributes"]["content_translation_source"] = "und";
+    }
+  }
+
   /**
    * Les resultats d'une requetes peuvent avoir des contenus de types
    * differents.
@@ -281,6 +286,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     $confRow = [];
     $results = [];
     $this->validationDatas();
+    $this->overwriteDefaultLanguage();
     // dd($this->rawDatas["data"]);
     if (!empty($this->rawDatas['data']))
       foreach ($this->rawDatas['data'] as $k => $row) {
@@ -314,7 +320,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       }
     return $results;
   }
-  
+
   /**
    * recupere la configuration encours.
    */
@@ -332,7 +338,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     }
     return $this->domaineId;
   }
-  
+
   /**
    * Permet de recuperer les données à partir de l'url;
    */
@@ -357,7 +363,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         'connect_timeout' => 30
       ]
     ];
-    
+
     /**
      *
      * @var \Drupal\migrationwbh\Plugin\migrate_plus\data_parser\JsonApi $json_api
@@ -365,7 +371,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     $json_api = $this->DataParserPluginManager->createInstance('json_api', $conf);
     return (int) $json_api->getResourseBrute($url);
   }
-  
+
   /**
    * Permet de recuperer les données à partir de l'url;
    */
@@ -390,7 +396,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         'connect_timeout' => 30
       ]
     ];
-    
+
     /**
      *
      * @var \Drupal\migrationwbh\Plugin\migrate_plus\data_parser\JsonApi $json_api
@@ -399,11 +405,10 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     $this->rawDatas = $json_api->getDataByExternalApi($url);
     if (!empty($this->rawDatas['data'][0])) {
       $this->numberItems = count($this->rawDatas['data']);
-    }
-    else
+    } else
       $this->numberItems = 1;
   }
-  
+
   /**
    * Lorque jsonapi renvoit 1 donnée, il ne le met pas dans [0].
    * Notre Logique attent toujours [0]
@@ -415,14 +420,14 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       $this->rawDatas['data'][0] = $temp;
     }
   }
-  
+
   /**
    * Base de validation.
    */
   protected function validationDatas() {
     //
   }
-  
+
   /**
    * Pour importer les contenus en relation.
    */
@@ -466,8 +471,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
               $data_rows[$k][$fieldName][] = $subValue['meta'];
             }
           }
-        }
-        elseif (isset($value['data']['meta']["drupal_internal__target_id"])) {
+        } elseif (isset($value['data']['meta']["drupal_internal__target_id"])) {
           $value['data']['meta']["target_id"] = $value['data']['meta']["drupal_internal__target_id"];
           unset($value['data']['meta']["drupal_internal__target_id"]);
           $subValue = $value['data'];
@@ -493,7 +497,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
           // set value.
           $data_rows[$k][$fieldName] = $value['data']['meta'];
         }
-        
+
         // }
         // La recuperation des informations par defaut
         // else {
@@ -509,8 +513,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         // $value['data']['meta']["drupal_internal__target_id"];
         // }
       }
-    }
-    catch (DebugCode $e) {
+    } catch (DebugCode $e) {
       $dbg = [
         'fieldName' => $fieldName,
         'value' => $value,
@@ -522,8 +525,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         $this->addToLogs($dbg, $fieldName);
         // dd($dbg, 'getRelationShip', true);
       }
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
       $dbg = [
         'value' => $value,
         'errors' => ExceptionExtractMessage::errorAll($e, 7)
@@ -535,29 +537,29 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       }
     }
   }
-  
+
   protected function getConfigImport() {
     if (!static::$configImport) {
       static::$configImport = \Drupal::config('migrationwbh.import')->getRawData();
     }
   }
-  
+
   public function getDebugLog() {
     return $this->debugLog;
   }
-  
+
   public function getRawDatas() {
     return $this->rawDatas;
   }
-  
+
   public function getConfiguration() {
     return $this->configuration;
   }
-  
+
   public function getFieldData() {
     return $this->fieldData;
   }
-  
+
   /**
    * Permet de regenerer le rendu.
    *
@@ -566,7 +568,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   public function setRollback($val = true) {
     $this->rollback = $val;
   }
-  
+
   /**
    *
    * @param boolean $val
@@ -574,37 +576,37 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   public function setImport($val = true) {
     $this->import = $val;
   }
-  
+
   protected function addToLogs($data, $key = null) {
     if ($key)
       static::$logs[$key][] = $data;
     else
       static::$logs[] = $data;
   }
-  
+
   protected function addDebugLogs($data, $key = null) {
     if ($key)
       static::$logs['debug'][$key][] = $data;
     else
       static::$logs['debug'][] = $data;
   }
-  
+
   public function getLogs() {
     return static::$logs;
   }
-  
+
   public function getEntityTypeId() {
     return $this->entityTypeId;
   }
-  
+
   public function activeIgnoreData() {
     $this->setIgnoreDatas(true);
   }
-  
+
   public function setIgnoreDatas($value) {
     $this->ignoreExistantData = $value;
   }
-  
+
   /**
    * Drupal pour le moment a opter de ne pas exposer les données de layouts
    * builder, car ce dernier utilise le format json et un ya quelques probleme
@@ -627,7 +629,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       }
     }
   }
-  
+
   /**
    *
    * @return number
@@ -635,11 +637,11 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   public function getNumberItems() {
     return $this->numberItems;
   }
-  
+
   public function setDebugMode(bool $value) {
     $this->debugMode = $value;
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -647,7 +649,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    */
   public function buildDataRows(array $row, array &$data_rows) {
   }
-  
+
   /**
    *
    * {@inheritdoc}
@@ -655,23 +657,23 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    */
   public function buildMappingProcess(array $configuration, array &$process) {
   }
-  
+
   public function getFieldId() {
     return $this->field_id;
   }
-  
+
   public function setFieldId($value) {
     $this->field_id = $value;
   }
-  
+
   public function getFieldIdType() {
     return $this->field_id_type;
   }
-  
+
   public function setFieldIdType($value) {
     $this->field_id_type = $value;
   }
-  
+
   /**
    *
    * @return \Drupal\Core\Entity\EntityTypeManagerInterface
@@ -681,7 +683,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
       $this->entityTypeManager = \Drupal::entityTypeManager();
     return $this->entityTypeManager;
   }
-  
+
   /**
    * La date renvoyer peut etre auformat : "2024-01-02T09:48:47+01:00" et la
    * date qui doit etre sauvegarder est au format : "2024-01-02T08:48:47".

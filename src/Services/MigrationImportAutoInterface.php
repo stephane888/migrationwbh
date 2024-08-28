@@ -16,7 +16,7 @@ class MigrationImportAutoInterface {
    * Permet de recuperer les données provenant de relation Ship.
    */
   protected $fieldData;
-  
+
   /**
    * Permet de recuperer les données à partir d'une source.
    */
@@ -37,7 +37,7 @@ class MigrationImportAutoInterface {
   protected array $rawDatas = [];
   protected $debugLog;
   protected $rollback = false;
-  
+
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
       \Drupal::logger('migrationwbh')->critical('Données non valide : ' . $this->entityTypeId, $data);
@@ -45,11 +45,11 @@ class MigrationImportAutoInterface {
     }
     $this->fieldData = $data;
   }
-  
+
   public function setUrl($url) {
     $this->url = $url;
   }
-  
+
   protected function runMigrate(array $configuration) {
     $this->configuration = $configuration;
     if ($this->SkypRunMigrate)
@@ -72,8 +72,7 @@ class MigrationImportAutoInterface {
         throw DebugCode::exception('runMigrate error : ' . $status, $executable->message);
       }
       return true;
-    }
-    catch (DebugCode $e) {
+    } catch (DebugCode $e) {
       $dbg = [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas,
@@ -81,8 +80,7 @@ class MigrationImportAutoInterface {
         'error_value' => $e->getContentToDebug()
       ];
       $this->debugLog['runMigrate'][] = $dbg;
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
       $migrate->setStatus(MigrationInterface::STATUS_IDLE);
       $dbg = [
         'fieldData' => $this->fieldData,
@@ -94,7 +92,14 @@ class MigrationImportAutoInterface {
       return false;
     }
   }
-  
+
+  protected function overwriteDefaultLanguage() {
+    foreach ($this->rawDatas["data"] as &$rawData) {
+      $rawData["attributes"]["default_langcode"] = True;
+      $rawData["attributes"]["content_translation_source"] = "und";
+    }
+  }
+
   /**
    * Les resultats d'une requetes peuvent avoir des contenus de types
    * differents.
@@ -103,6 +108,8 @@ class MigrationImportAutoInterface {
     $confRow = [];
     $results = [];
     $this->validationDatas();
+    $this->overwriteDefaultLanguage();
+
     foreach ($this->rawDatas['data'] as $k => $row) {
       $confRow[$k] = $configuration;
       $this->buildDataRows($row, $confRow[$k]['source']['data_rows']);
@@ -117,7 +124,7 @@ class MigrationImportAutoInterface {
     //
     return $results;
   }
-  
+
   /**
    * Permet de recuper les données à partir de l'url;
    */
@@ -132,7 +139,7 @@ class MigrationImportAutoInterface {
         $url
       ]
     ];
-    
+
     /**
      *
      * @var \Drupal\migrationwbh\Plugin\migrate_plus\data_parser\JsonApi $json_api
@@ -140,7 +147,7 @@ class MigrationImportAutoInterface {
     $json_api = $this->DataParserPluginManager->createInstance('json_api', $conf);
     $this->rawDatas = $json_api->getDataByExternalApi($url);
   }
-  
+
   protected function performRawDatas() {
     if (!empty($this->rawDatas['data']) && empty($this->rawDatas['data'][0])) {
       $temp = $this->rawDatas['data'];
@@ -148,28 +155,27 @@ class MigrationImportAutoInterface {
       $this->rawDatas['data'][0] = $temp;
     }
   }
-  
+
   /**
    * Base de validation.
    */
   protected function validationDatas() {
     //
   }
-  
+
   public function getDebugLog() {
     return $this->debugLog;
   }
-  
+
   public function getRawDatas() {
     return $this->rawDatas;
   }
-  
+
   public function getConfiguration() {
     return $this->configuration;
   }
-  
+
   public function getFieldData() {
     return $this->fieldData;
   }
-  
 }
