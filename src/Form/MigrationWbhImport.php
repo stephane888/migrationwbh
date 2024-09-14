@@ -399,14 +399,28 @@ class MigrationWbhImport extends ConfigFormBase {
     }
     //
     if (!empty($config_theme_entities)) {
+      
       /**
        *
        * @var \Drupal\generate_style_theme\Entity\ConfigThemeEntity $config_theme_entity
        */
       $config_theme_entity = reset($config_theme_entities);
+      $site_config = $config_theme_entity->get('site_config')->value;
+      //
       $config_theme_entity->set('run_npm', false);
       $config_theme_entity->getLogo();
       $config_theme_entity->save();
+      /**
+       * On s'assure que la page d'accueil est bien definit.
+       */
+      if ($site_config) {
+        $site_config = JSON::decode($site_config);
+        $defaultThemeName = \Drupal::configFactory()->getEditable('system.site');
+        $defaultThemeName->set("page.front", $site_config["page.front"]);
+        $defaultThemeName->set("name", $site_config["name"]);
+        $defaultThemeName->set("mail", $site_config["mail"]);
+        $defaultThemeName->save();
+      }
     }
   }
 
