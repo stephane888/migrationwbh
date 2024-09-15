@@ -149,6 +149,11 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     return $this->DuplicateEntityReference;
   }
   
+  /**
+   * Retourne les configuration en relation avec le site.
+   *
+   * @return array|mixed|NULL|number|\Drupal\Component\Render\MarkupInterface|string|unknown[]|array[]
+   */
   protected function getSiteSourceConfigs() {
     if (!$this->siteSourceConfigs) {
       $this->siteSourceConfigs = \Drupal::config("wb_horizon_public.source_site_configs")->get();
@@ -316,7 +321,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     if (isset($siteSourceConfigs["languages"]["availables_langcodes"])) {
       $langcodes = $siteSourceConfigs["languages"]["availables_langcodes"];
     }
-    dd($url, $siteSourceConfigs, $default_langcode, $externalDomain);
     
     foreach ($langcodes as $langcode) {
       if ($langcode == $default_langcode)
@@ -325,21 +329,22 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         case $entity instanceof ContentEntityInterface:
           if ($entity->isTranslatable()) {
             $TranslatedUrl = str_replace("/fr/", "/$langcode/", $url);
-            
-            $translated_array = $this->retrieveRowDatas($TranslatedUrl)['data']["attributes"];
-            unset($translated_array["created"], $translated_array["changed"], $translated_array[$this->field_id]);
-            if ($translated_array["langcode"] == $langcode) {
-              // $translation = $entity->getTranslation($langcode);
-              $array_value = [];
-              foreach ($translated_array as $key => $value) {
-                $field_key = $configuration["process"][$key] ?? $key;
-                // $translation->set($field_key, $value);
-                $array_value[$field_key] = $value;
-              }
-              if (!$entity->hasTranslation($langcode)) {
-                $translation = $entity->addTranslation($langcode, $array_value);
-                $translation->save();
-                $this->genNewPathAlias($translation);
+            if ($this->checkIfUrlexiste($TranslatedUrl)) {
+              $translated_array = $this->retrieveRowDatas($TranslatedUrl)['data']["attributes"];
+              unset($translated_array["created"], $translated_array["changed"], $translated_array[$this->field_id]);
+              if ($translated_array["langcode"] == $langcode) {
+                // $translation = $entity->getTranslation($langcode);
+                $array_value = [];
+                foreach ($translated_array as $key => $value) {
+                  $field_key = $configuration["process"][$key] ?? $key;
+                  // $translation->set($field_key, $value);
+                  $array_value[$field_key] = $value;
+                }
+                if (!$entity->hasTranslation($langcode)) {
+                  $translation = $entity->addTranslation($langcode, $array_value);
+                  $translation->save();
+                  $this->genNewPathAlias($translation);
+                }
               }
             }
           }
@@ -797,5 +802,23 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   protected function getValidDateString(string $date_string) {
     $DateTime = new DrupalDateTime($date_string);
     return $DateTime->format("Y-m-d\Th:i:s");
+  }
+  
+  /**
+   * Permet de verifier si une url existe.
+   */
+  protected function checkIfUrlexiste(string $url) {
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_NOBODY, true);
+    $result = curl_exec($curl);
+    $urlExiste = false;
+    if ($result !== false) {
+      $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+      if ($statusCode == 200) {
+        $urlExiste = true;
+      }
+    }
+    curl_close($curl);
+    return $urlExiste;
   }
 }
