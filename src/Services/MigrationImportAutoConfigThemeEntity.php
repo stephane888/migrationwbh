@@ -35,7 +35,7 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
   ];
   private $unGetRelationships = [];
   private $SkypRunMigrate = false;
-  
+
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
@@ -95,6 +95,15 @@ class MigrationImportAutoConfigThemeEntity extends MigrationImportAutoBase {
     /**
      * On force ces champs à false pour éviter la regénération du theme
      */
+
+    $source_default_langcode = \Drupal::config("wb_horizon_public.source_site_configs")->get("languages.default_langcode") ?? "fr";
+    $config_factory = \Drupal::service('config.factory');
+    $config = $config_factory->getEditable('system.site');
+    $config->set('langcode', $source_default_langcode);
+    $config->set('default_langcode', $source_default_langcode);
+    $config->save();
+
+
     $data_rows[$k]["run_npm"] = false;
     $data_rows[$k]["force_regenerate_npm_files"] = false;
   }
