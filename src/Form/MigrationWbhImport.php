@@ -160,7 +160,7 @@ class MigrationWbhImport extends ConfigFormBase {
       '#type' => 'number',
       '#title' => $this->t('Nombre de contenu a importer par etape'),
       '#description' => "Si vous le temps d'execution sur votre serveur est elevé, vous pouvez augemnter la valeur",
-      '#default_value' => isset($config['number_import']) ? $config['number_import'] : 3
+      '#default_value' => isset($config['number_import']) ? $config['number_import'] : 1
     ];
     $this->addLanguage();
     //
