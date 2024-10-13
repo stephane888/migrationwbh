@@ -180,6 +180,7 @@ class MigrationWbhImport extends ConfigFormBase {
       // $this->getMigrationList($form);
       $this->createDomain();
       $this->disableUseDomainConfig();
+      $this->updateSchemaFields('menu_link_content');
       $this->actionButtons($form, $form_state, "Importer les contenus et passer à l'etape suivante", 'ImportNextSubmit');
     }
     catch (MigrateException $e) {
@@ -191,6 +192,27 @@ class MigrationWbhImport extends ConfigFormBase {
       $this->messenger()->addError("Une erreur s'est produite, vieillez contactez l'administrateur");
       $this->messenger()->addError($e->getMessage());
       $this->logger('migrationwbh')->alert($e->getMessage(), ExceptionExtractMessage::errorAll($e));
+    }
+  }
+  
+  /**
+   * On constate des erreurs lors de mise en place de configurations.
+   * Par : le schema de 'menu_link_content' ne voit pas les champs
+   * content_translation_source et sa suite.
+   * (content_translation/src/ContentTranslationHandler.php)
+   * On est obligé de mettre ce schema ajour apres l'installation.
+   *
+   * @see \Drupal::service('entity.last_installed_schema.repository')
+   * @see \Drupal::service('entity_field.manager')
+   * @param string $entity_type_id
+   */
+  protected function updateSchemaFields(string $entity_type_id) {
+    /**
+     * Cette fonction permet de comparer les champs definits via les fichiers et
+     * les colonnes au niveaux de la BD.
+     */
+    if (\Drupal::moduleHandler()->loadInclude('content_translation', 'module', 'content_translation')) {
+      _content_translation_install_field_storage_definitions($entity_type_id);
     }
   }
   
@@ -210,7 +232,9 @@ class MigrationWbhImport extends ConfigFormBase {
     // self::_batch_import_paragraph($external_domain, $offset, $limit,
     // $progress, $context);
     // $this->runBatch($config);
-    self::_batch_import_blocks_contents($external_domain, $offset, $limit, $progress, $context);
+    // self::_batch_import_blocks_contents($external_domain, $offset, $limit,
+    // $progress, $context);
+    self::_batch_import_menu_link_content($external_domain, $offset, $limit, $progress, $context);
   }
   
   /**

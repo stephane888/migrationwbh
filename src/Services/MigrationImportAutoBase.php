@@ -195,9 +195,9 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         throw DebugCode::exception(" Le plugin n'existe pas : " . $plugin_id, $plugin_id);
       }
       $migrate->getIdMap()->prepareUpdate();
-      if ($this->entityTypeId == 'block') {
-        $db['getMessages'] = $migrate->getIdMap()->getMessages();
-      }
+      // if ($this->entityTypeId == 'block') {
+      // $db['getMessages'] = $migrate->getIdMap()->getMessages();
+      // }
       $executable = new MigrateExecutable($migrate, new MigrateMessage());
       
       if ($this->rollback)

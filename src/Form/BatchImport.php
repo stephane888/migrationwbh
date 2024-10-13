@@ -353,11 +353,11 @@ trait BatchImport {
     if (self::$IgnoreDataReImport)
       $MigrationImportEntities->activeIgnoreData();
     $MigrationImportEntities->runImport();
-    $context['message'] = "Import config_theme_entity, " . $MigrationImportEntities->getNumberItems() + $offset . '/' . $numberToImport;
-    $context['results'][] = "5 config_theme_entity";
+    $context['message'] = "Import menu_link_content, " . $MigrationImportEntities->getNumberItems() + $offset . '/' . $numberToImport;
+    $context['results'][] = "5 menu_link_content";
     if (self::$debugMode) {
       $logs = $MigrationImportEntities->getLogs();
-      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__ConfigThemeEntity', true, "logs");
+      debugLog::kintDebugDrupal($logs, 'ImportNextSubmit__MenuLinkContent', true, "logs");
     }
   }
   
