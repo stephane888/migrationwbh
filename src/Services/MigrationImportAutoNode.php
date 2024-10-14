@@ -40,6 +40,7 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
     $this->LoggerChannel = $LoggerChannel;
+    $this->field_id = 'drupal_internal__nid';
   }
   
   public function runImport() {
@@ -152,5 +153,4 @@ class MigrationImportAutoNode extends MigrationImportAutoBase {
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }

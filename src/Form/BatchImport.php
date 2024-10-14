@@ -299,6 +299,10 @@ trait BatchImport {
      * Import des produits.
      */
     $url = trim($external_domain, '/') . "/jsonapi/export-entities-wbhorizon/commerce_product?page[offset]=$offset&page[limit]=$limit";
+    /**
+     *
+     * @var \Drupal\migrationwbh\Services\MigrationImportAutoCommerceProduct $MigrationImportEntities
+     */
     $MigrationImportEntities = self::loadPluginMigrate('migrationwbh.migrate_auto_import.commerce_product');
     $MigrationImportEntities->setDebugMode(self::$debugMode);
     $MigrationImportEntities->setUrl($url);

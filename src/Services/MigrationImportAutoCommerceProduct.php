@@ -43,6 +43,7 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
     $this->LoggerChannel = $LoggerChannel;
+    $this->field_id = 'drupal_internal__product_id';
   }
   
   public function runImport() {
@@ -156,5 +157,4 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }

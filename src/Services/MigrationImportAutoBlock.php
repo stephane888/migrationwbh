@@ -47,6 +47,8 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->LoggerChannel = $LoggerChannel;
+    $this->field_id_type = 'string';
+    $this->field_id = 'drupal_internal__id';
   }
   
   public function runImport() {
@@ -172,5 +174,4 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }

@@ -234,7 +234,9 @@ class MigrationWbhImport extends ConfigFormBase {
     // $this->runBatch($config);
     // self::_batch_import_blocks_contents($external_domain, $offset, $limit,
     // $progress, $context);
-    self::_batch_import_menu_link_content($external_domain, $offset, $limit, $progress, $context);
+    // self::_batch_import_menu_link_content($external_domain, $offset, $limit,
+    // $progress, $context);
+    self::_batch_import_commerce_product($external_domain, $offset, $limit, $progress, $context);
   }
   
   /**
