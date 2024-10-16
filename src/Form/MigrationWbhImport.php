@@ -224,7 +224,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $external_domain = $config['external_domain'];
     $context = [];
     $offset = 0;
-    $limit = 5;
+    $limit = 2;
     $progress = 0;
     self::$debugMode = true;
     // self::_batch_import_block($external_domain, $offset, $limit, $progress,
@@ -232,11 +232,11 @@ class MigrationWbhImport extends ConfigFormBase {
     // self::_batch_import_paragraph($external_domain, $offset, $limit,
     // $progress, $context);
     // $this->runBatch($config);
-    // self::_batch_import_blocks_contents($external_domain, $offset, $limit,
-    // $progress, $context);
+    self::_batch_import_blocks_contents($external_domain, $offset, $limit, $progress, $context);
     // self::_batch_import_menu_link_content($external_domain, $offset, $limit,
     // $progress, $context);
-    self::_batch_import_commerce_product($external_domain, $offset, $limit, $progress, $context);
+    // self::_batch_import_commerce_product($external_domain, $offset, $limit,
+    // $progress, $context);
   }
   
   /**

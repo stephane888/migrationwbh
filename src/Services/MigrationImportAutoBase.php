@@ -405,7 +405,6 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     $this->overwriteDefaultLanguage();
     if (!empty($this->rawDatas['data']))
       foreach ($this->rawDatas['data'] as $k => $row) {
-        // dd($row);
         $confRow[$k] = $configuration;
         $entityId = $k;
         // Get id contenu.
@@ -421,6 +420,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
             continue;
           }
         }
+        $this->formatData($row);
         /**
          * Les paths posent un probleme sur commerce.
          * On opte dans un premier temps de les OFFs.
@@ -438,6 +438,30 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         // dd($results);
       }
     return $results;
+  }
+  
+  /**
+   * Permet de formatter certaines données comme les dates.
+   *
+   * @param array $row
+   */
+  protected function formatData(array &$row) {
+    // Champs created
+    if (!empty($row['attributes']['created']) && is_string($row['attributes']['created'])) {
+      $row['attributes']['created'] = strtotime($row['attributes']['created']);
+    }
+    // Champs changed
+    if (!empty($row['attributes']['changed']) && is_string($row['attributes']['changed'])) {
+      $row['attributes']['changed'] = strtotime($row['attributes']['changed']);
+    }
+    // Champs content_translation_created
+    if (!empty($row['attributes']['content_translation_created']) && is_string($row['attributes']['content_translation_created'])) {
+      $row['attributes']['content_translation_created'] = strtotime($row['attributes']['content_translation_created']);
+    }
+    // Champs content_translation_changed
+    if (!empty($row['attributes']['content_translation_changed']) && is_string($row['attributes']['content_translation_changed'])) {
+      $row['attributes']['content_translation_changed'] = strtotime($row['attributes']['content_translation_changed']);
+    }
   }
   
   /**

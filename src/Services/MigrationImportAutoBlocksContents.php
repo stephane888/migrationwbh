@@ -120,6 +120,7 @@ class MigrationImportAutoBlocksContents extends MigrationImportAutoBase {
       else
         $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
+    // dd($row, $data_rows, $this->getRawDatas());
   }
   
   /**
@@ -178,5 +179,4 @@ class MigrationImportAutoBlocksContents extends MigrationImportAutoBase {
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }
