@@ -47,6 +47,7 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ou une url ');
     $this->retrieveDatas();
+    // dd($this->rawDatas);
     /**
      * --
      *
@@ -147,5 +148,4 @@ class MigrationImportAutoCommerceProductVariation extends MigrationImportAutoBas
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }

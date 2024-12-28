@@ -30,12 +30,12 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-
+  
   /**
    * disponible pour des entités avec bundles.
    */
   protected $bundle = null;
-
+  
   /**
    * les champs qui serront ignorées dans le mapping.
    *
@@ -54,21 +54,15 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
     'content_translation_uid'
   ];
   private $SkypRunMigrate = false;
-
-  function __construct(
-    MigrationPluginManager $MigrationPluginManager,
-    DataParserPluginManager $DataParserPluginManager,
-    LoggerChannel $LoggerChannel,
-    $entityTypeId,
-    $bundle
-  ) {
+  
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
     $this->LoggerChannel = $LoggerChannel;
   }
-
+  
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
@@ -96,7 +90,7 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
     ];
     return $this->loopDatas($configuration);
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -106,25 +100,28 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
     $k = 0;
     $data_rows[$k] = $row['attributes'];
     $this->getLayoutBuilderField($data_rows[$k]);
-    /** 
-     *   Some entities don't have their bundles in the regular location in $row["relationships"] ({entityTypeId}_type)
-     *   we define it manually for theme
+    /**
+     * Some entities don't have their bundles in the regular location in
+     * $row["relationships"] ({entityTypeId}_type)
+     * we define it manually for theme
      */
     $bundle_key = match ($this->entityTypeId) {
-      "booking_equipes" => "booking_config_type",
-      default => $this->entityTypeId . '_type'
+        "booking_equipes" => "booking_config_type",
+        default => $this->entityTypeId . '_type'
     };
-
+    
     // dd($bundle_key, $row, $this);
     // Set type
     if (!empty($row['relationships'][$bundle_key]['data']['meta']['drupal_internal__target_id'])) {
       $data_rows[$k]['type'] = $row['relationships'][$bundle_key]['data']['meta']['drupal_internal__target_id'];
       $this->bundle = $data_rows[$k]['type'];
-    } elseif (!empty($row['type']) && str_contains($row['type'], "--")) {
+    }
+    elseif (!empty($row['type']) && str_contains($row['type'], "--")) {
       $entity_array = explode("--", $row['type']);
       $data_rows[$k]['type'] = $entity_array[1];
       $this->bundle = $entity_array[1];
-    } else {
+    }
+    else {
       throw DebugCode::exception("Impossible de determiner le bundle pour l'entité : " . $this->entityTypeId, $row);
     }
     // Get relationships datas
@@ -134,12 +131,13 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
       // On met à jour le domaine.
       if ($fieldName == 'field_domain_access') {
         $data_rows[$k][$fieldName] = $this->getCurrentDomaine();
-      } else
+      }
+      else
         $this->getRelationShip($data_rows, $k, $fieldName, $value);
     }
     // dd($data_rows);
   }
-
+  
   /**
    *
    * @param
@@ -150,18 +148,26 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
     // dd($configuration);
     if (!empty($configuration['source']['data_rows'][0])) {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
-        if ($this->entityTypeId == "booking_equipes" && $fieldName == "type") {
+        if ($fieldName == $this->getFieldId()) {
+          $fil = explode("__", $fieldName);
+          if (isset($fil[1])) {
+            $process[$fil[1]] = $fieldName;
+          }
+          else {
+            $process['id'] = $fieldName;
+          }
+        }
+        elseif ($this->entityTypeId == "booking_equipes" && $fieldName == "type") {
           $process["booking_config_type"] = $fieldName;
-        } elseif ($fieldName == $this->getFieldId()) {
-          $process['id'] = $fieldName;
-        } elseif (in_array($fieldName, $this->unMappingFields))
+        }
+        elseif (in_array($fieldName, $this->unMappingFields))
           continue;
         else
           $process[$fieldName] = $fieldName;
       }
     }
   }
-
+  
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -176,7 +182,8 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
       return true;
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes'][$this->getFieldId()])) {
       return true;
-    } else {
+    }
+    else {
       $dbg = [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
@@ -184,14 +191,14 @@ class MigrationImportAutoEntitiesBundle extends MigrationImportAutoBase {
       throw DebugCode::exception('validationDatas', $dbg);
     }
   }
-
+  
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs[$this->entityTypeId][$this->bundle][$key][] = $data;
     elseif ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-
+  
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId && $this->bundle)
       static::$logs['debug'][$this->entityTypeId][$this->bundle][$key][] = $data;

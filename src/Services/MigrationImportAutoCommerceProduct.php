@@ -50,6 +50,7 @@ class MigrationImportAutoCommerceProduct extends MigrationImportAutoBase {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ou une url ');
     $this->retrieveDatas();
+    
     /**
      * --
      *
