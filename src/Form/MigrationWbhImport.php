@@ -224,7 +224,7 @@ class MigrationWbhImport extends ConfigFormBase {
     $external_domain = $config['external_domain'];
     $context = [];
     $offset = 0;
-    $limit = 2;
+    $limit = 4;
     $progress = 0;
     self::$debugMode = true;
     // self::_batch_import_block($external_domain, $offset, $limit, $progress,
