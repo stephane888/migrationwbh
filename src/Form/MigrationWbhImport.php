@@ -176,7 +176,7 @@ class MigrationWbhImport extends ConfigFormBase {
   protected function formState2(array &$form, FormStateInterface $form_state) {
     try {
       // decommente pour tester l'import.
-      // $this->testImport();
+      $this->testImport();
       // $this->getMigrationList($form);
       $this->createDomain();
       $this->disableUseDomainConfig();
@@ -224,38 +224,12 @@ class MigrationWbhImport extends ConfigFormBase {
     $external_domain = $config['external_domain'];
     $context = [];
     $offset = 0;
-    $limit = 4;
+    $limit = 1;
     $progress = 0;
     self::$debugMode = true;
-    // self::_batch_import_block($external_domain, $offset, $limit, $progress,
-    // $context);
-    // self::_batch_import_paragraph($external_domain, $offset, $limit,
-    // $progress, $context);
-    // $this->runBatch($config);
-    // self::_batch_import_blocks_contents($external_domain, $offset, $limit,
-    // $progress, $context);
-    // self::_batch_import_menu_link_content($external_domain, $offset, $limit,
-    // $progress, $context);
+    
     // //////////////////
-    // $attributeValue =
-    // \Drupal\commerce_product\Entity\ProductAttributeValue::load(1);
-    // // dd($attributeValue->toArray());
-    // $values = [
-    // 'attribute_value_id' => 100,
-    // 'name' => 'Vert noir',
-    // 'langcode' => 'fr',
-    // 'attribute' => 'color',
-    // 'field_color' => [
-    // 'name' => 'Vert noir',
-    // 'color' => '#000FFF'
-    // ]
-    // ];
-    // $attributeValue =
-    // \Drupal::entityTypeManager()->getStorage('commerce_product_attribute_value')->create($values);
-    // $attributeValue->save();
-    // dd($attributeValue->toArray());
-    // //////////////////
-    self::_batch_import_commerce_product($external_domain, $offset, $limit, $progress, $context);
+    self::_batch_import_commerce_shipping_method($external_domain, $offset, $limit, $progress, $context);
   }
   
   /**

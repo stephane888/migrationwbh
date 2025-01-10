@@ -30,7 +30,7 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
    * @var array
    */
   protected array $rawDatas = [];
-
+  
   /**
    * Les champs qui serront ignorées dans le mapping.
    *
@@ -42,19 +42,14 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
   ];
   private $unGetRelationships = [];
   private $SkypRunMigrate = false;
-
-  function __construct(
-    MigrationPluginManager $MigrationPluginManager,
-    DataParserPluginManager $DataParserPluginManager,
-    LoggerChannel $LoggerChannel,
-    $entityTypeId
-  ) {
+  
+  function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
     $this->entityTypeId = $entityTypeId;
     $this->LoggerChannel = $LoggerChannel;
   }
-
+  
   public function runImport() {
     if (!$this->fieldData && !$this->url)
       throw new \ErrorException(' Vous devez definir fieldData ');
@@ -79,9 +74,10 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
+    \Stephane888\Debug\debugLog::symfonyDebug($this->rawDatas, $this->entityTypeId, true);
     return $this->loopDatas($configuration);
   }
-
+  
   /**
    *
    * {@inheritdoc}
@@ -105,7 +101,7 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
         $data_rows[$k]["end_date"] = $this->getValidDateString($data_rows[$k]["end_date"]);
     }
   }
-
+  
   /**
    *
    * @param
@@ -116,15 +112,22 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
     if (!empty($configuration['source']['data_rows'][0])) {
       foreach ($configuration['source']['data_rows'][0] as $fieldName => $value) {
         if ($fieldName == $this->getFieldId()) {
-          $process['id'] = $fieldName;
-        } elseif (in_array($fieldName, $this->unMappingFields))
+          $fil = explode("__", $fieldName);
+          if (isset($fil[1])) {
+            $process[$fil[1]] = $fieldName;
+          }
+          else {
+            $process['id'] = $fieldName;
+          }
+        }
+        elseif (in_array($fieldName, $this->unMappingFields))
           continue;
         else
           $process[$fieldName] = $fieldName;
       }
     }
   }
-
+  
   /**
    * Dans la mesure ou le contenu est renvoyé sur 1 ligne, (data.type au lieu de
    * data.0.type ).
@@ -136,7 +139,8 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
     $this->performRawDatas();
     if (!empty($this->rawDatas['data'][0]) && !empty($this->rawDatas['data'][0]['attributes'][$this->getFieldId()])) {
       return true;
-    } else {
+    }
+    else {
       $dbg = [
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
@@ -145,12 +149,12 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
       throw DebugCode::exception($this->entityTypeId . ' : format de donnée non valide ', $dbg);
     }
   }
-
+  
   protected function addToLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs[$this->entityTypeId][$key][] = $data;
   }
-
+  
   protected function addDebugLogs($data, $key = null) {
     if ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;

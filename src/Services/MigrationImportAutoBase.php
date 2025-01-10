@@ -226,8 +226,8 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
                   $newEntity = $Storage->load($data[$this->field_id]);
                   if (!$newEntity) {
                     $message = " Erreur de creation de l'entité : " . $this->entityTypeId . " => " . $data[$this->field_id];
-                    // dd($data, $this->field_id, $this->entityTypeId,
-                    // $this->configuration);
+                    // dd( $data, $this->field_id, $this->entityTypeId,
+                    // $this->configuration );
                     \Drupal::messenger()->addWarning($message);
                     $this->LoggerChannel->warning($message);
                   }
