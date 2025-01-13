@@ -74,7 +74,6 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
       ],
       'process' => []
     ];
-    \Stephane888\Debug\debugLog::symfonyDebug($this->rawDatas, $this->entityTypeId, true);
     return $this->loopDatas($configuration);
   }
   
@@ -145,7 +144,6 @@ class MigrationImportAutoEntities extends MigrationImportAutoBase {
         'fieldData' => $this->fieldData,
         'rawData' => $this->rawDatas
       ];
-      \Stephane888\Debug\debugLog::symfonyDebug($dbg, 'validationDatas___' . $this->entityTypeId . '___', true);
       throw DebugCode::exception($this->entityTypeId . ' : format de donnée non valide ', $dbg);
     }
   }
