@@ -176,7 +176,7 @@ class MigrationWbhImport extends ConfigFormBase {
   protected function formState2(array &$form, FormStateInterface $form_state) {
     try {
       // decommente pour tester l'import.
-      $this->testImport();
+      // $this->testImport();
       // $this->getMigrationList($form);
       $this->createDomain();
       $this->disableUseDomainConfig();
@@ -217,14 +217,14 @@ class MigrationWbhImport extends ConfigFormBase {
   }
   
   /**
-   * Permet de faire de tests d'import.
+   * Permet de faire les tests d'import.
    */
   protected function testImport() {
     $config = $this->config(static::$keySettings)->getRawData();
     $external_domain = $config['external_domain'];
     $context = [];
     $offset = 0;
-    $limit = 1;
+    $limit = 5;
     $progress = 0;
     self::$debugMode = true;
     
