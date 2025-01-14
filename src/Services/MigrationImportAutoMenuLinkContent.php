@@ -95,10 +95,19 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
     $data_rows[$k]['bundle'] = $row['relationships']['bundle']['data']['meta']["drupal_internal__target_id"];
     $this->bundle = $data_rows[$k]['bundle'];
     // On verifie s'il ya un menu parent, on le cree et on poursuit.
+    // dump($row['attributes']);
     if ($row['attributes']['parent']) {
       $parent = explode(":", $row['attributes']['parent']);
-      $this->ImportMenuLinkParent($parent[1], $row['links'], $row['attributes']['menu_name']);
+      $menuParents = $this->ImportMenuLinkParent($parent[1], $row['links'], $row['attributes']['menu_name']);
+      if (!empty($menuParents['data'][0]['attributes']['drupal_internal__id'])) {
+        $MenuLinkContent = \Drupal\menu_link_content\Entity\MenuLinkContent::load($menuParents['data'][0]['attributes']['drupal_internal__id']);
+        $data_rows[$k]['parent'] = $parent[0] . ':' . $MenuLinkContent->uuid();
+      }
+      else
+        throw new \Exception(" Impossible de determiner l'id du menu parent ");
     }
+    // Afin de constuire les menus tenant compte des sous menus, il faut
+    // utiliser les memes ID
     // Get relationships datas
     foreach ($row['relationships'] as $fieldName => $value) {
       if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
@@ -108,7 +117,8 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
   }
   
   /**
-   * Permet d'importer le parent avant le menu enfant.
+   * Permet d'importer le parent avant le menu enfant et retoune les données
+   * brutes du menu parent.
    *
    * @param string $uuid
    * @param array $linksSelf
@@ -124,6 +134,7 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
       $MenuLinkContent->setIgnoreDatas(true);
       $MenuLinkContent->setUrl($url);
       $MenuLinkContent->runImport();
+      return $MenuLinkContent->getRawDatas();
     }
   }
   

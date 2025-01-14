@@ -5,6 +5,7 @@ namespace Drupal\migrationwbh\Services;
 use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\DataParserPluginManager;
 use Stephane888\Debug\ExceptionExtractMessage;
+use Stephane888\Debug\ExceptionDebug;
 use Stephane888\Debug\debugLog;
 use Drupal\Core\Logger\LoggerChannel;
 
@@ -114,7 +115,13 @@ class MigrationAutoImport {
    */
   public function setData(array $data) {
     if (empty($data['data']) || empty($data['links'])) {
-      throw new \ErrorException('Données non valide; EntityTypeId : ' . $this->entityTypeId . '; Bundle : ' . $this->bundle);
+      // si le type d'entite est vide. on sauvegarde plus d'information
+      // concernant l'erreur
+      if (empty($this->entityTypeId)) {
+        throw ExceptionDebug::exception('Données non valide et mal initialiser; EntityTypeId : ' . $this->entityTypeId . '; Bundle : ' . $this->bundle, \debug_backtrace());
+      }
+      else
+        throw new \ErrorException('Données non valide; EntityTypeId : ' . $this->entityTypeId . '; Bundle : ' . $this->bundle);
     }
     $this->fieldData = $data;
   }

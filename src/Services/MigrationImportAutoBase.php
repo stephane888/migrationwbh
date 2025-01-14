@@ -678,6 +678,11 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
     return $this->debugLog;
   }
   
+  /**
+   * Retourne un array contenant les données brutes.
+   *
+   * @return array|mixed
+   */
   public function getRawDatas() {
     return $this->rawDatas;
   }
