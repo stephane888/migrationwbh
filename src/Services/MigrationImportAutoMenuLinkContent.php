@@ -50,9 +50,9 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
   function __construct(MigrationPluginManager $MigrationPluginManager, DataParserPluginManager $DataParserPluginManager, LoggerChannel $LoggerChannel, $entityTypeId, $bundle) {
     $this->MigrationPluginManager = $MigrationPluginManager;
     $this->DataParserPluginManager = $DataParserPluginManager;
+    $this->LoggerChannel = $LoggerChannel;
     $this->entityTypeId = $entityTypeId;
     $this->bundle = $bundle;
-    $this->LoggerChannel = $LoggerChannel;
   }
   
   public function runImport() {
@@ -94,11 +94,36 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
     // Set type
     $data_rows[$k]['bundle'] = $row['relationships']['bundle']['data']['meta']["drupal_internal__target_id"];
     $this->bundle = $data_rows[$k]['bundle'];
+    // On verifie s'il ya un menu parent, on le cree et on poursuit.
+    if ($row['attributes']['parent']) {
+      $parent = explode(":", $row['attributes']['parent']);
+      $this->ImportMenuLinkParent($parent[1], $row['links'], $row['attributes']['menu_name']);
+    }
     // Get relationships datas
     foreach ($row['relationships'] as $fieldName => $value) {
       if (in_array($fieldName, $this->unGetRelationships) || empty($value['data']))
         continue;
       $this->getRelationShip($data_rows, $k, $fieldName, $value);
+    }
+  }
+  
+  /**
+   * Permet d'importer le parent avant le menu enfant.
+   *
+   * @param string $uuid
+   * @param array $linksSelf
+   * @param string $menu_name
+   */
+  private function ImportMenuLinkParent(string $uuid, array $linksSelf, string $menu_name) {
+    $exploreSelfLink = explode("menu_link_content/$menu_name", $linksSelf['self']['href']);
+    if ($exploreSelfLink[1]) {
+      $url = $exploreSelfLink[0] . "menu_link_content/$menu_name/$uuid";
+      $MenuLinkContent = new MigrationImportAutoMenuLinkContent($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel, $this->entityTypeId, $this->bundle);
+      $MenuLinkContent->setRollback($this->rollback);
+      // On desactive la reimportation.
+      $MenuLinkContent->setIgnoreDatas(true);
+      $MenuLinkContent->setUrl($url);
+      $MenuLinkContent->runImport();
     }
   }
   
@@ -156,5 +181,4 @@ class MigrationImportAutoMenuLinkContent extends MigrationImportAutoBase {
     elseif ($this->entityTypeId)
       static::$logs['debug'][$this->entityTypeId][$key][] = $data;
   }
-  
 }

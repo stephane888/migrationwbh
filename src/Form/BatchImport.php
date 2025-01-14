@@ -349,7 +349,7 @@ trait BatchImport {
     $url = trim($external_domain, '/') . "/jsonapi/export-entities-wbhorizon/menu_link_content?page[offset]=$offset&page[limit]=$limit";
     /**
      *
-     * @var \Drupal\migrationwbh\Services\MigrationImportAutoConfigThemeEntity $MigrationImportEntities
+     * @var \Drupal\migrationwbh\Services\MigrationImportAutoMenuLinkContent $MigrationImportEntities
      */
     $MigrationImportEntities = self::loadPluginMigrate('migrationwbh.migrate_auto_import.menu_link_content');
     $MigrationImportEntities->setDebugMode(self::$debugMode);

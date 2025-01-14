@@ -64,7 +64,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    *
    * @var boolean
    */
-  protected $ignoreExistantData = false;
+  protected $AllowReImportExistantData = false;
   
   /**
    *
@@ -415,7 +415,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
         if (!empty($row['attributes'][$idKey]))
           $entityId = $row['attributes'][$idKey];
         // ignore existant datas.
-        if ($this->ignoreExistantData) {
+        if ($this->AllowReImportExistantData) {
           $entity = $this->GetEntityTypeManager()->getStorage($this->entityTypeId)->load($entityId);
           if ($entity) {
             $results[$entityId] = true;
@@ -563,11 +563,10 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
    */
   protected function getRelationShip(array &$data_rows, $k, $fieldName, $value) {
     try {
-      
       $MigrationAutoImport = new MigrationAutoImport($this->MigrationPluginManager, $this->DataParserPluginManager, $this->LoggerChannel);
       $MigrationAutoImport->setData($value);
       $MigrationAutoImport->rollback = $this->rollback;
-      $MigrationAutoImport->ignoreExistantData = $this->ignoreExistantData;
+      $MigrationAutoImport->AllowReImportExistantData = $this->AllowReImportExistantData;
       if ($result = $MigrationAutoImport->runImport()) {
         // Si on une image, on essaye de recuperer le titre et l'alt.
         // if ($MigrationAutoImport->getEntityTypeId() == 'file') {
@@ -735,7 +734,7 @@ class MigrationImportAutoBase implements MigrationImportAutoBaseInterface {
   }
   
   public function setIgnoreDatas($value) {
-    $this->ignoreExistantData = $value;
+    $this->AllowReImportExistantData = $value;
   }
   
   /**
