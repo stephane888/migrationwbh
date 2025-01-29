@@ -90,15 +90,16 @@ class MigrationImportAutoBlock extends MigrationImportAutoBase {
    */
   protected function clearDatas() {
     $newDatas = [];
-    
     if (!empty($this->rawDatas['data']) && !empty($this->rawDatas['data'][0])) {
       foreach ($this->rawDatas['data'] as $value) {
         $attributes = $value['attributes'];
         $theme = $attributes['theme'];
-        if (empty($attributes['visibility'])) {
+        // S'il nya pas de visibilité ou si la visibilté lié au domaine n'est
+        // pas definie.
+        if (empty($attributes['visibility']) || empty($attributes['visibility']['domain']['domains'])) {
           $newDatas[] = $value;
         }
-        elseif (in_array($theme, $attributes['visibility']['domain']['domains'])) {
+        elseif (!empty($attributes['visibility']['domain']['domains']) && in_array($theme, $attributes['visibility']['domain']['domains'])) {
           $newDatas[] = $value;
         }
       }
